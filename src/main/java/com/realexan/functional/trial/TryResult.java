@@ -78,14 +78,14 @@ public class TryResult<T, S> {
 
     public TryResult<T, S> onFailure(Try<T, S> tryAgain) {
         if (!isSuccess()) {
-            return Try.tryOn(input, tryAgain);
+            return Try.doTry(input, tryAgain);
         }
         return this;
     }
 
     public <U> TryResult<S, U> onSuccess(Try<S, U> tryAnother) {
         if (isSuccess()) {
-            return Try.tryOn(this.output, tryAnother);
+            return Try.doTry(this.output, tryAnother);
         }
         return null;
     }

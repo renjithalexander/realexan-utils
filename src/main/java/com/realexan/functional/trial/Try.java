@@ -30,31 +30,47 @@ import java.util.function.Function;
  */
 public class Try<T, U> {
 
-    private final ThrowingFunction<T, U> function;
+    private final Function<T, TryResult<T, U>> function;
 
     public Try(ThrowingFunction<T, U> function) {
-        this.function = function;
+        this.function = getFunction(function);
     }
 
     public TryResult<T, U> tryIt(T input) {
-        return getFunction(function, input).apply(input);
+        return this.function.apply(input);
     }
 
-    public static <T, U> TryResult<T, U> tryOn(T input, Try<T, U> trial) {
+    public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial) {
         return trial.tryIt(input);
     }
 
-    public static <T, U> TryResult<T, U> tryOn(T input, ThrowingFunction<T, U> function) {
-        return new Try<>(function).tryIt(input);
+    public static <T, U> TryResult<T, U> doTry(T input, ThrowingFunction<T, U> function) {
+        return doTry(input, new Try<>(function));
     }
 
-    public static <T, U> U tryOn(T input, Try<T, U> transformer, U defaultVal) {
-        TryResult<T, U> result = Try.tryOn(input, transformer);
+    public TryResult<T, U> tryIt(T input, U defaultVal) {
+        TryResult<T, U> result = this.function.apply(input);
+        if (!result.isSuccess()) {
+            return new TryResult<>(input, defaultVal);
+        }
+        return result;
+    }
+
+    public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial, U defaultVal) {
+        return trial.tryIt(input, defaultVal);
+    }
+
+    public static <T, U> TryResult<T, U> doTry(T input, ThrowingFunction<T, U> function, U defaultVal) {
+        return doTry(input, new Try<>(function), defaultVal);
+    }
+
+    public static <T, U> U getResult(T input, Try<T, U> transformer, U defaultVal) {
+        TryResult<T, U> result = Try.doTry(input, transformer);
         return result.isSuccess() ? result.getOutput() : defaultVal;
     }
 
-    public static <T, U> U tryOn(T input, ThrowingFunction<T, U> function, U defaultVal) {
-        TryResult<T, U> result = Try.tryOn(input, function);
+    public static <T, U> U getResult(T input, ThrowingFunction<T, U> function, U defaultVal) {
+        TryResult<T, U> result = Try.doTry(input, function);
         return result.isSuccess() ? result.getOutput() : defaultVal;
     }
 
@@ -64,8 +80,8 @@ public class Try<T, U> {
         U apply(T input) throws Throwable;
     }
 
-    private static <T, U> Function<T, TryResult<T, U>> getFunction(ThrowingFunction<T, U> function, T input) {
-        return (Void) -> {
+    private static <T, U> Function<T, TryResult<T, U>> getFunction(ThrowingFunction<T, U> function) {
+        return (input) -> {
             try {
                 return new TryResult<>(input, function.apply(input));
             } catch (Throwable e) {
@@ -76,7 +92,7 @@ public class Try<T, U> {
     }
 
     public static void main(String... args) {
-        tryOn(args[0], URI::new);
+        doTry(args[0], URI::new);
     }
 
 }
