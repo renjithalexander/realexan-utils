@@ -5,6 +5,8 @@ package com.realexan.functional;
 
 import java.util.function.Function;
 
+import com.realexan.functional.trial.Try;
+
 /**
  * 
  * 
@@ -34,7 +36,7 @@ public class Functional {
     }
 
     public static int tryParse(String s, int defaultVal) {
-        return Try.tryOn(s, Integer::parseInt, new Integer(defaultVal));
+        return tryDo(s, Integer::parseInt, defaultVal);
     }
 
     public static <T, U> U tryDo(T input, Function<T, U> transformer, U defaultVal) {

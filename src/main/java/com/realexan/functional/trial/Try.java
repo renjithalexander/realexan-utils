@@ -1,9 +1,10 @@
 /**
  * 
  */
-package com.realexan.functional;
+package com.realexan.functional.trial;
 
 import java.net.URI;
+import java.util.function.Function;
 
 /**
  * 
@@ -36,7 +37,7 @@ public class Try<T, U> {
     }
 
     public TryResult<T, U> tryIt(T input) {
-        return ThrowingFunction.getResult(this.function, input);
+        return getFunction(function, input).apply(input);
     }
 
     public static <T, U> TryResult<T, U> tryOn(T input, Try<T, U> trial) {
@@ -49,16 +50,33 @@ public class Try<T, U> {
 
     public static <T, U> U tryOn(T input, Try<T, U> transformer, U defaultVal) {
         TryResult<T, U> result = Try.tryOn(input, transformer);
-        return result.isSuccess() ? result.getSuccess() : defaultVal;
+        return result.isSuccess() ? result.getOutput() : defaultVal;
     }
 
     public static <T, U> U tryOn(T input, ThrowingFunction<T, U> function, U defaultVal) {
         TryResult<T, U> result = Try.tryOn(input, function);
-        return result.isSuccess() ? result.getSuccess() : defaultVal;
+        return result.isSuccess() ? result.getOutput() : defaultVal;
+    }
+
+    @FunctionalInterface
+    public interface ThrowingFunction<T, U> {
+
+        U apply(T input) throws Throwable;
+    }
+
+    private static <T, U> Function<T, TryResult<T, U>> getFunction(ThrowingFunction<T, U> function, T input) {
+        return (Void) -> {
+            try {
+                return new TryResult<>(input, function.apply(input));
+            } catch (Throwable e) {
+                return new TryResult<>(input, e);
+            }
+        };
+
     }
 
     public static void main(String... args) {
-        ThrowingFunction.getFunction(URI::new, args[0]);
+        tryOn(args[0], URI::new);
     }
 
 }

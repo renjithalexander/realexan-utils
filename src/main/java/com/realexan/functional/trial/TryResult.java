@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.realexan.functional;
+package com.realexan.functional.trial;
 
 /**
  * 
@@ -29,7 +29,7 @@ public class TryResult<T, S> {
 
     private final T input;
 
-    private final S success;
+    private final S output;
 
     private final Throwable error;
 
@@ -43,15 +43,22 @@ public class TryResult<T, S> {
 
     private TryResult(T input, S success, Throwable error) {
         this.input = input;
-        this.success = success;
+        this.output = success;
         this.error = error;
     }
 
     /**
-     * @return the success
+     * @return the output
      */
-    public S getSuccess() {
-        return success;
+    public S getOutput() {
+        return output;
+    }
+
+    public S getOutput(S ifFailed) {
+        if (!isSuccess()) {
+            return ifFailed;
+        }
+        return this.output;
     }
 
     /**
@@ -66,7 +73,7 @@ public class TryResult<T, S> {
     }
 
     public boolean isSuccess() {
-        return success != null;
+        return output != null;
     }
 
     public TryResult<T, S> onFailure(Try<T, S> tryAgain) {
@@ -78,16 +85,9 @@ public class TryResult<T, S> {
 
     public <U> TryResult<S, U> onSuccess(Try<S, U> tryAnother) {
         if (isSuccess()) {
-            return Try.tryOn(this.success, tryAnother);
+            return Try.tryOn(this.output, tryAnother);
         }
         return null;
-    }
-
-    public S onFailure(S defaultVal) {
-        if (!isSuccess()) {
-            return defaultVal;
-        }
-        return this.success;
     }
 
 }
