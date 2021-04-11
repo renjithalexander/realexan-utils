@@ -38,11 +38,6 @@ public class Try<T, U> {
         this.function = getFunction(function);
     }
 
-    public Try(ThrowingFunction<T, U> function, U defaultVal) {
-        Objects.requireNonNull(function);
-        this.function = getFunctionWithDefault(function, defaultVal);
-    }
-
     public <Y, Z> Try<T, Z> then(Try<U, Z> another) {
         Objects.requireNonNull(another);
         return new Try<>((ThrowingFunction<T, Z>) (t) -> {
@@ -62,11 +57,15 @@ public class Try<T, U> {
     }
 
     public <Y, Z> Try<T, Z> then(ThrowingFunction<U, Z> function) {
-        return this.then(function);
+        return this.then(new Try<>(function));
     }
 
     public TryResult<T, U> tryIt(T input) {
         return this.function.apply(input);
+    }
+
+    public static <T, U> Try<T, U> getTry(ThrowingFunction<T, U> function) {
+        return new Try<>(function);
     }
 
     public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial) {
@@ -118,19 +117,6 @@ public class Try<T, U> {
                 return new TryResult<>(input, function.apply(input));
             } catch (Throwable e) {
                 return new TryResult<>(input, e);
-            }
-        };
-
-    }
-
-    private static <T, U> Function<T, TryResult<T, U>> getFunctionWithDefault(ThrowingFunction<T, U> function,
-            U defaultVal) {
-        Objects.requireNonNull(function);
-        return (input) -> {
-            try {
-                return new TryResult<>(input, function.apply(input));
-            } catch (Throwable e) {
-                return new TryResult<>(input, defaultVal);
             }
         };
 
