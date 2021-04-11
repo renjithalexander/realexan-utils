@@ -1,0 +1,44 @@
+# Code compiled by Maven
+*target*
+
+# Eclipse project files
+*.classpath*
+*.settings*
+*.project*
+*/data/*
+pom.xml.versionsBackup
+
+# IntelliJ IDEA project files
+.idea/
+*.iml
+
+
+# Mac OS X Finder metadata files
+*.DS_Store
+
+# emacs temporary files
+.saves*
+\#*
+.\#*
+
+# vim temporary files
+*.swp
+
+# sublime project files
+*.sublime*
+
+# Python project files
+*.pydevproject
+*$py.class
+
+*.metadata
+
+# node modules
+node_modules
+
+# Build products
+buildResults.txt
+
+#IDE/CODE Editor will create temp history file
+.history
+
