@@ -36,6 +36,31 @@ public class Try<T, U> {
         this.function = getFunction(function);
     }
 
+    public Try(ThrowingFunction<T, U> function, U defaultVal) {
+        this.function = getFunctionWithDefault(function, defaultVal);
+    }
+
+    public <Y, Z> Try<T, Z> then(Try<U, Z> another) {
+        return new Try<>((ThrowingFunction<T, Z>) (t) -> {
+            TryResult<T, U> result = this.tryIt(t);
+            if (result.isSuccess()) {
+                TryResult<U, Z> next = another.tryIt(result.getOutput());
+                if (next.isSuccess()) {
+                    return next.getOutput();
+                } else {
+                    throw next.getError();
+                }
+            } else {
+                throw result.getError();
+            }
+
+        });
+    }
+
+    public <Y, Z> Try<T, Z> then(ThrowingFunction<U, Z> function) {
+        return this.then(function);
+    }
+
     public TryResult<T, U> tryIt(T input) {
         return this.function.apply(input);
     }
@@ -86,6 +111,18 @@ public class Try<T, U> {
                 return new TryResult<>(input, function.apply(input));
             } catch (Throwable e) {
                 return new TryResult<>(input, e);
+            }
+        };
+
+    }
+
+    private static <T, U> Function<T, TryResult<T, U>> getFunctionWithDefault(ThrowingFunction<T, U> function,
+            U defaultVal) {
+        return (input) -> {
+            try {
+                return new TryResult<>(input, function.apply(input));
+            } catch (Throwable e) {
+                return new TryResult<>(input, defaultVal);
             }
         };
 

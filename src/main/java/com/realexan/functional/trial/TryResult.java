@@ -3,6 +3,8 @@
  */
 package com.realexan.functional.trial;
 
+import java.util.function.Consumer;
+
 /**
  * 
  * 
@@ -76,18 +78,20 @@ public class TryResult<T, S> {
         return output != null;
     }
 
-    public TryResult<T, S> onFailure(Try<T, S> tryAgain) {
-        if (!isSuccess()) {
-            return Try.doTry(input, tryAgain);
-        }
-        return this;
+    public void then(Consumer<TryResult<T, S>> c) {
+        c.accept(this);
     }
 
-    public <U> TryResult<S, U> onSuccess(Try<S, U> tryAnother) {
+    public void thenOnSuccess(Consumer<S> c) {
         if (isSuccess()) {
-            return Try.doTry(this.output, tryAnother);
+            c.accept(output);
         }
-        return null;
+    }
+
+    public void thenOnFailure(Consumer<Throwable> c) {
+        if (!isSuccess()) {
+            c.accept(error);
+        }
     }
 
 }
