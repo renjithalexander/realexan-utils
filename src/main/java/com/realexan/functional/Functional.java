@@ -19,7 +19,8 @@ import java.util.function.Function;
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
  *          <td>08-Apr-2021</td>
- *          <td><a href="mailto:renjithalexander@gmail.com">renjithalexander</a></td>
+ *          <td><a href=
+ *          "mailto:renjithalexander@gmail.com">renjithalexander</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
@@ -33,20 +34,11 @@ public class Functional {
     }
 
     public static int tryParse(String s, int defaultVal) {
-        Function<String, TryResult<Integer>> function = ThrowingFunction.getFunction(Integer::parseInt, s);
-        TryResult<Integer> result = function.apply(s);
-        if (result.isSuccess()) {
-            return result.getSuccess();
-        }
-        return defaultVal;
+        return Try.tryOn(s, Integer::parseInt, new Integer(defaultVal));
     }
 
     public static <T, U> U tryDo(T input, Function<T, U> transformer, U defaultVal) {
-        try {
-            return transformer.apply(input);
-        } catch (Throwable t) {
-            return defaultVal;
-        }
+        return Try.tryOn(input, transformer::apply, defaultVal);
     }
 
 }

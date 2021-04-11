@@ -20,7 +20,8 @@ import java.util.function.Function;
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
  *          <td>08-Apr-2021</td>
- *          <td><a href="mailto:renjithalexander@gmail.com">renjithalexander</a></td>
+ *          <td><a href=
+ *          "mailto:renjithalexander@gmail.com">renjithalexander</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
@@ -31,28 +32,28 @@ public interface ThrowingFunction<T, U> {
 
     U apply(T input) throws Throwable;
 
-    static <T, U> Function<T, TryResult<U>> getFunction(ThrowingFunction<T, U> function, T input) {
+    static <T, U> Function<T, TryResult<T, U>> getFunction(ThrowingFunction<T, U> function, T input) {
         return (Void) -> {
             try {
-                return new TryResult<>(function.apply(input));
+                return new TryResult<>(input, function.apply(input));
             } catch (Throwable e) {
-                return new TryResult<>(e);
+                return new TryResult<>(input, e);
             }
         };
 
     }
 
+    static <T, U> TryResult<T, U> getResult(ThrowingFunction<T, U> function, T input) {
+        return getFunction(function, input).apply(input);
+    }
+
     static <T, U> U execute(ThrowingFunction<T, U> function, T input, U defaultVal) {
-        TryResult<U> result = getResult(function, input);
+        TryResult<T, U> result = getResult(function, input);
         return result.isSuccess() ? result.getSuccess() : defaultVal;
     }
 
     static <T, U> U execute(ThrowingFunction<T, U> function, T input) {
         return execute(function, input, null);
-    }
-
-    static <T, U> TryResult<U> getResult(ThrowingFunction<T, U> function, T input) {
-        return getFunction(function, input).apply(input);
     }
 
 }

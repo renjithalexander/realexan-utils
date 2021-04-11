@@ -17,28 +17,32 @@ package com.realexan.functional;
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
  *          <td>08-Apr-2021</td>
- *          <td><a href="mailto:renjithalexander@gmail.com">renjithalexander</a></td>
+ *          <td><a href=
+ *          "mailto:renjithalexander@gmail.com">renjithalexander</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
  *          </table>
  *
  */
-public class TryResult<S> {
+public class TryResult<T, S> {
+
+    private final T input;
 
     private final S success;
 
     private final Throwable error;
 
-    public TryResult(S success) {
-        this(success, null);
+    public TryResult(T input, S success) {
+        this(input, success, null);
     }
 
-    public TryResult(Throwable error) {
-        this(null, error);
+    public TryResult(T input, Throwable error) {
+        this(input, null, error);
     }
 
-    private TryResult(S success, Throwable error) {
+    private TryResult(T input, S success, Throwable error) {
+        this.input = input;
         this.success = success;
         this.error = error;
     }
@@ -57,8 +61,33 @@ public class TryResult<S> {
         return error;
     }
 
+    public T getInput() {
+        return input;
+    }
+
     public boolean isSuccess() {
         return success != null;
+    }
+
+    public TryResult<T, S> onFailure(Try<T, S> tryAgain) {
+        if (!isSuccess()) {
+            return Try.tryOn(input, tryAgain);
+        }
+        return this;
+    }
+
+    public <U> TryResult<S, U> onSuccess(Try<S, U> tryAnother) {
+        if (isSuccess()) {
+            return Try.tryOn(this.success, tryAnother);
+        }
+        return null;
+    }
+
+    public S onFailure(S defaultVal) {
+        if (!isSuccess()) {
+            return defaultVal;
+        }
+        return this.success;
     }
 
 }

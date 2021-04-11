@@ -19,7 +19,8 @@ import java.net.URI;
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
  *          <td>08-Apr-2021</td>
- *          <td><a href="mailto:renjithalexander@gmail.com">renjithalexander</a></td>
+ *          <td><a href=
+ *          "mailto:renjithalexander@gmail.com">renjithalexander</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
@@ -28,70 +29,32 @@ import java.net.URI;
  */
 public class Try<T, U> {
 
-    private final T input;
-
     private final ThrowingFunction<T, U> function;
 
-    private TryResult<U> result;
-
-    public Try(T t, ThrowingFunction<T, U> function) {
-        this.input = t;
+    public Try(ThrowingFunction<T, U> function) {
         this.function = function;
     }
 
-    public static <T, U> Try<T, U> tryOn(T input, Try<T, U> trial) {
-        return new Try<>(input, y -> trial.function.apply(y));
+    public TryResult<T, U> tryIt(T input) {
+        return ThrowingFunction.getResult(this.function, input);
     }
 
-    public Try<T, U> tryIt() {
-        if (result != null) {
-            result = ThrowingFunction.getResult(this.function, this.input);
-        }
-        return this;
+    public static <T, U> TryResult<T, U> tryOn(T input, Try<T, U> trial) {
+        return trial.tryIt(input);
     }
 
-    public Try<T, U> onFailure(Try<T, U> tryAgain) {
-        if (result == null) {
-            tryIt();
-        }
-        if (!result.isSuccess()) {
-            return tryAgain.tryIt();
-        }
-        return this;
+    public static <T, U> TryResult<T, U> tryOn(T input, ThrowingFunction<T, U> function) {
+        return new Try<>(function).tryIt(input);
     }
 
-    public U onFailure(U defaultVal) {
-        if (result == null) {
-            tryIt();
-        }
-        if (!result.isSuccess()) {
-            return defaultVal;
-        }
-        return result.getSuccess();
+    public static <T, U> U tryOn(T input, Try<T, U> transformer, U defaultVal) {
+        TryResult<T, U> result = Try.tryOn(input, transformer);
+        return result.isSuccess() ? result.getSuccess() : defaultVal;
     }
 
-    public U getResult() {
-        return getResult(false);
-    }
-
-    public U getResultTryAfresh() {
-        return getResult(true);
-    }
-
-    private U getResult(boolean afresh) {
-        if (afresh || result == null) {
-            tryIt();
-        }
-        return result.getSuccess();
-    }
-
-    public static <T, U> U tryDo(T input, Try<T, U> transformer, U defaultVal) {
-        Try<T, U> tryIt = Try.tryOn(input, transformer);
-        tryIt.tryIt();
-        if (tryIt.result.isSuccess()) {
-            return tryIt.result.getSuccess();
-        }
-        return defaultVal;
+    public static <T, U> U tryOn(T input, ThrowingFunction<T, U> function, U defaultVal) {
+        TryResult<T, U> result = Try.tryOn(input, function);
+        return result.isSuccess() ? result.getSuccess() : defaultVal;
     }
 
     public static void main(String... args) {
