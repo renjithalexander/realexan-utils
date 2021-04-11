@@ -27,15 +27,15 @@ import java.util.function.Consumer;
  *          </table>
  *
  */
-public class TryResult<T, S> {
+public class TryResult<T, U> {
 
     private final T input;
 
-    private final S output;
+    private final U output;
 
     private final Throwable error;
 
-    public TryResult(T input, S success) {
+    public TryResult(T input, U success) {
         this(input, success, null);
     }
 
@@ -43,7 +43,7 @@ public class TryResult<T, S> {
         this(input, null, error);
     }
 
-    private TryResult(T input, S success, Throwable error) {
+    private TryResult(T input, U success, Throwable error) {
         this.input = input;
         this.output = success;
         this.error = error;
@@ -52,11 +52,11 @@ public class TryResult<T, S> {
     /**
      * @return the output
      */
-    public S getOutput() {
+    public U getOutput() {
         return output;
     }
 
-    public S getOutput(S ifFailed) {
+    public U getOutput(U ifFailed) {
         if (!isSuccess()) {
             return ifFailed;
         }
@@ -78,11 +78,11 @@ public class TryResult<T, S> {
         return output != null;
     }
 
-    public void then(Consumer<TryResult<T, S>> c) {
+    public void then(Consumer<TryResult<T, U>> c) {
         c.accept(this);
     }
 
-    public void thenOnSuccess(Consumer<S> c) {
+    public void thenOnSuccess(Consumer<U> c) {
         if (isSuccess()) {
             c.accept(output);
         }

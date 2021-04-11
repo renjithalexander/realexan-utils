@@ -4,6 +4,7 @@
 package com.realexan.functional.trial;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -33,14 +34,17 @@ public class Try<T, U> {
     private final Function<T, TryResult<T, U>> function;
 
     public Try(ThrowingFunction<T, U> function) {
+        Objects.requireNonNull(function);
         this.function = getFunction(function);
     }
 
     public Try(ThrowingFunction<T, U> function, U defaultVal) {
+        Objects.requireNonNull(function);
         this.function = getFunctionWithDefault(function, defaultVal);
     }
 
     public <Y, Z> Try<T, Z> then(Try<U, Z> another) {
+        Objects.requireNonNull(another);
         return new Try<>((ThrowingFunction<T, Z>) (t) -> {
             TryResult<T, U> result = this.tryIt(t);
             if (result.isSuccess()) {
@@ -66,6 +70,7 @@ public class Try<T, U> {
     }
 
     public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial) {
+        Objects.requireNonNull(trial);
         return trial.tryIt(input);
     }
 
@@ -82,6 +87,7 @@ public class Try<T, U> {
     }
 
     public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial, U defaultVal) {
+        Objects.requireNonNull(trial);
         return trial.tryIt(input, defaultVal);
     }
 
@@ -106,6 +112,7 @@ public class Try<T, U> {
     }
 
     private static <T, U> Function<T, TryResult<T, U>> getFunction(ThrowingFunction<T, U> function) {
+        Objects.requireNonNull(function);
         return (input) -> {
             try {
                 return new TryResult<>(input, function.apply(input));
@@ -118,6 +125,7 @@ public class Try<T, U> {
 
     private static <T, U> Function<T, TryResult<T, U>> getFunctionWithDefault(ThrowingFunction<T, U> function,
             U defaultVal) {
+        Objects.requireNonNull(function);
         return (input) -> {
             try {
                 return new TryResult<>(input, function.apply(input));
