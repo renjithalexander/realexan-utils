@@ -10,7 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 
-import com.realexan.thread.utils.Debounce.DebounceRunner;
+import com.realexan.thread.utils.Debounce.Debouncer;
 
 
 /**
@@ -47,7 +47,7 @@ public class DebounceTester extends JFrame{
     
     private static JTextArea area = new JTextArea();
     
-    DebounceRunner db = Debounce.debounce(() -> DebounceTester.p(""+System.currentTimeMillis()/1000), 3000, 5000, true);
+    Debouncer db = Debounce.debounce(() -> DebounceTester.p(""+System.currentTimeMillis()/1000), 3000, 5000, true);
     
     public DebounceTester() {
         this.setBounds(100, 100, 900, 600);
