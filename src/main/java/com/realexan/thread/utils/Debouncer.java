@@ -35,15 +35,15 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * 
  */
-public class Debounce {
+public class Debouncer {
 
-    public static Debouncer debounce(ThrowingFunction function, long wait, long maxDelayBetweenExecutions,
+    public static Debounce prepare(ThrowingFunction function, long wait, long maxDelayBetweenExecutions,
             boolean immediate) {
         State state = new State(function, wait, maxDelayBetweenExecutions, immediate);
         return state;
     }
 
-    private static class State implements Debouncer {
+    private static class State implements Debounce {
 
         private final Lock lock = new ReentrantLock();
 
@@ -223,7 +223,7 @@ public class Debounce {
         };
     }
 
-    public static interface Debouncer {
+    public static interface Debounce {
 
         void run();
 
