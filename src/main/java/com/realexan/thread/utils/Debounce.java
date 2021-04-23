@@ -27,13 +27,13 @@ import java.util.concurrent.locks.ReentrantLock;
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
  *          <td>23-Apr-2021</td>
- *          <td><a href="mailto:renjithalexander@gmail.com">realexan</a></td>
+ *          <td><a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
  *          </table>
  *
- * @since Finesse 12.6.1
+ * 
  */
 public class Debounce {
 
