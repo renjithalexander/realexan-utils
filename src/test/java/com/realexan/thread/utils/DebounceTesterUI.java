@@ -128,6 +128,19 @@ public class DebounceTesterUI extends JFrame {
         create.setBounds(790, 10, 100, 80);
 
         area.setBounds(0, 0, 820, 500);
+
+        run.setToolTipText("Runs the debounce function. Will automatically create a "
+                + "debounce function if the configurations have changed.");
+        coolOff.setToolTipText("The cool off time period between runs.");
+        forcedRun.setToolTipText("The interval for forced execution of the function,"
+                + " in case the triggers don't cease for too long. " + "A negative value means this is disregarded."
+                + " A non negative value lesser than coolOffTime will cause to use coolOffTime instead.");
+        immediate.setToolTipText("flag to denote whether to execute the function "
+                + "immediately on the trigger or wait until cool off.");
+        nonBlocking.setToolTipText("The executor to be used to run the function. If "
+                + "null, the runs will happen on scheduler thread which " + "manages the cool off.");
+        create.setToolTipText("Creates a debounce function with the configurations");
+
         area.setWrapStyleWord(true);
         area.setEditable(false);
         area.setFont(Font.getFont(Font.SANS_SERIF));
