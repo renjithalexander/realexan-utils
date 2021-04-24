@@ -3,15 +3,18 @@
  */
 package com.realexan.thread;
 
+import static com.realexan.common.ThreadUtils.runWithLock;
+import static com.realexan.common.ThreadUtils.toExceptionSuppressedRunnable;
+
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.realexan.common.ThrowingRunnable;
-import static com.realexan.common.ThreadUtils.toExceptionSuppressedRunnable;
-import static com.realexan.common.ThreadUtils.runWithLock;;;
+import com.realexan.common.ThrowingRunnable;;;
 
 /**
  * 
@@ -35,10 +38,13 @@ import static com.realexan.common.ThreadUtils.runWithLock;;;
  */
 public class Debouncer {
 
-    public static Debounce prepare(ThrowingRunnable function, long wait, long maxDelayBetweenExecutions,
-            boolean immediate) {
-        DebounceImpl state = new DebounceImpl(function, wait, maxDelayBetweenExecutions, immediate);
-        return state;
+    public static Debounce prepare(ThrowingRunnable function, long coolOffTime, long maxDelayBetweenExecutions,
+            boolean immediate, boolean runNonBlocked) {
+        return new DebounceImpl(function, coolOffTime, maxDelayBetweenExecutions, immediate, runNonBlocked);
+    }
+
+    public static Debounce prepare(ThrowingRunnable function, long coolOffTime) {
+        return new DebounceImpl(function, coolOffTime, -1, true, false);
     }
 
     private static class DebounceImpl implements Debounce {
@@ -53,7 +59,9 @@ public class Debouncer {
 
         private final long waitTime;
 
-        private final long maxDelayBetweenExecutions;
+        private final long maxDelayBetweenRuns;
+
+        private final ExecutorService executor;
 
         private volatile boolean isAlive = true;
 
@@ -64,7 +72,7 @@ public class Debouncer {
         private volatile State execution = new State(-1, 0);
 
         private DebounceImpl(ThrowingRunnable function, long waitTime, long maxDelayBetweenExecutions,
-                boolean immediate) {
+                boolean immediate, boolean runNonBlocked) {
             Objects.requireNonNull(function);
             this.function = toExceptionSuppressedRunnable(function);
             if (waitTime <= 0) {
@@ -74,8 +82,9 @@ public class Debouncer {
             if (maxDelayBetweenExecutions >= 0 && maxDelayBetweenExecutions < waitTime) {
                 maxDelayBetweenExecutions = waitTime;
             }
-            this.maxDelayBetweenExecutions = maxDelayBetweenExecutions;
+            this.maxDelayBetweenRuns = maxDelayBetweenExecutions;
             this.immediate = immediate;
+            this.executor = runNonBlocked ? Executors.newSingleThreadExecutor() : null;
         }
 
         private void kill() {
@@ -91,7 +100,7 @@ public class Debouncer {
         }
 
         private boolean forceRun() {
-            return maxDelayBetweenExecutions > 0 && getTimeElapsedSinceLastExecution() >= maxDelayBetweenExecutions;
+            return maxDelayBetweenRuns > 0 && getTimeElapsedSinceLastExecution() >= maxDelayBetweenRuns;
         }
 
         private long getNextSubmissionId() {
@@ -108,8 +117,8 @@ public class Debouncer {
             }
 
             submission = new State(getNextSubmissionId(), now());
-            // p("Submission id is " + submission.id);
 
+            // No schedules exist.
             if (!scheduleExists) {
                 DebounceTask toExecute = new DebounceTask(submission.id);
                 if (immediate) {
@@ -122,14 +131,16 @@ public class Debouncer {
         }
 
         private void execute(long id) {
-            function.run();
+            if (executor != null) {
+                executor.submit(function);
+            } else {
+                function.run();
+            }
             execution = new State(id, now());
         }
 
         private void eventFired(long id) {
             scheduleExists = false;
-            // p("eventfired...id: " + id + ", sub id: " + submission.id + ", exe id:" +
-            // execution.id);
             if (submission.id == execution.id) {
                 // do nothing. This is just cool off.
                 return;
@@ -147,7 +158,6 @@ public class Debouncer {
                 }
                 // If max delay run
                 if (mustRun) {
-                    // p("Must run exe");
                     execute(id);
                 }
                 // Schedule for next run.
@@ -246,8 +256,6 @@ public class Debouncer {
     private static long now() {
         return System.currentTimeMillis();
     }
-
-    
 
     /**
      * The Debounce function interface.

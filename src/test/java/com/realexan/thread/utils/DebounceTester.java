@@ -45,7 +45,7 @@ public class DebounceTester extends JFrame {
 
     private static JTextArea area = new JTextArea();
 
-    Debounce db = Debouncer.prepare(() -> DebounceTester.p("" + System.currentTimeMillis() / 1000), 3000, 5000, true);
+    Debounce db = Debouncer.prepare(() -> DebounceTester.p("" + System.currentTimeMillis() / 1000), 3000, 5000, true, false);
 
     public DebounceTester() {
         this.setBounds(100, 100, 900, 600);
@@ -68,7 +68,7 @@ public class DebounceTester extends JFrame {
     }
 
     public static void main(String... args) throws Exception {
-        DebounceTester t = new DebounceTester();
+        new DebounceTester();
 
     }
 
