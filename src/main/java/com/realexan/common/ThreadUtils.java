@@ -1,5 +1,7 @@
 package com.realexan.common;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -76,4 +78,15 @@ public class ThreadUtils {
         toExceptionSuppressedRunnable(() -> Thread.sleep(delay)).run();
     }
 
+    /**
+     * Returns the stack trace of the Throwable in String format.
+     * 
+     * @param t the throwable.
+     * @return stack trace.
+     */
+    public static String stackTraceToString(Throwable t) {
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
+    }
 }

@@ -41,6 +41,8 @@ public class DebouncerTest {
 
     private Debounce debounce;
 
+    private final String name = "junit";
+
     @After
     public void cleanup() throws Exception {
         if (debounce != null) {
@@ -52,7 +54,7 @@ public class DebouncerTest {
     @Test
     public void testDebouncerInitialExecutionsWithCoolOff() throws Exception {
         TestRunnable function = new TestRunnable();
-        debounce = Debouncer.create(function, 1000);
+        debounce = Debouncer.create(name, function, 1000);
         Assert.assertTrue(function.callbacks.isEmpty());
         debounce.run();
         Assert.assertEquals(1, function.callbacks.size());
@@ -81,7 +83,7 @@ public class DebouncerTest {
     public void testDebouncerContinuousExecution() throws Exception {
         TestRunnable function = new TestRunnable();
         CountDownLatch count = new CountDownLatch(2);
-        debounce = Debouncer.create(function, 1000);
+        debounce = Debouncer.create(name, function, 1000);
         Assert.assertTrue(function.callbacks.isEmpty());
 
         ActionListener listener = new ActionListener() {

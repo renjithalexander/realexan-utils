@@ -7,6 +7,8 @@ import static com.realexan.common.ThreadUtils.runWithLock;
 import static com.realexan.common.ThreadUtils.toExceptionSuppressedRunnable;
 import static com.realexan.common.ThreadUtils.now;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,6 +55,7 @@ public class Debouncer {
     /**
      * Returns a debounce function.
      * 
+     * @param name              the name of the debounce function.
      * @param function          the actual function to be executed.
      * @param coolOffTime       the cool off time period.
      * @param forcedRunInterval the interval for forced execution of the function,
@@ -64,14 +67,15 @@ public class Debouncer {
      *                          manages the cool off.
      * @return a debounce function.
      */
-    public static Debounce create(ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
+    public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, ExecutorService executor) {
-        return new DebounceImpl(function, coolOffTime, forcedRunInterval, immediate, executor);
+        return new DebounceImpl(name, function, coolOffTime, forcedRunInterval, immediate, executor);
     }
 
     /**
      * Returns a debounce function.
      * 
+     * @param name              the name of the debounce function.
      * @param function          the actual function to be executed.
      * @param coolOffTime       the cool off time period.
      * @param forcedRunInterval the interval for forced execution of the function,
@@ -82,21 +86,22 @@ public class Debouncer {
      *                          the flag is true.
      * @return a debounce function.
      */
-    public static Debounce create(ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
+    public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, boolean runNonBlocked) {
         ExecutorService executor = runNonBlocked ? Executors.newSingleThreadExecutor() : null;
-        return create(function, coolOffTime, forcedRunInterval, immediate, executor);
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor);
     }
 
     /**
      * Returns a debounce function.
      * 
+     * @param name        the name of the debounce function.
      * @param function    the actual function to be executed.
      * @param coolOffTime the cool off time period.
      * @return a debounce function.
      */
-    public static Debounce create(ThrowingRunnable function, long coolOffTime) {
-        return create(function, coolOffTime, -1, true, false);
+    public static Debounce create(String name, ThrowingRunnable function, long coolOffTime) {
+        return create(name, function, coolOffTime, -1, true, false);
     }
 
     /**
@@ -129,7 +134,7 @@ public class Debouncer {
         /**
          * Timer used to schedule next potential run.
          */
-        private final Timer timer = new Timer();
+        private final Timer timer;
         /**
          * The actual function to be executed.
          */
@@ -181,9 +186,10 @@ public class Debouncer {
          *                          immediately on the trigger or wait until cool off.
          * @param executor          the executor to be used to run the function.
          */
-        private DebounceImpl(ThrowingRunnable function, long coolOffTime, long forcedRunInterval, boolean immediate,
-                ExecutorService executor) {
+        private DebounceImpl(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
+                boolean immediate, ExecutorService executor) {
             Objects.requireNonNull(function);
+            timer = new Timer("Debounce-" + name);
             this.function = toExceptionSuppressedRunnable(function);
             if (coolOffTime <= 0) {
                 throw new IllegalArgumentException("Invalid wait time value");
@@ -397,6 +403,13 @@ public class Debouncer {
         public void cancel() {
             runWithLock(lock, this::kill);
         }
+
+        @Override
+        public void close() throws IOException {
+            cancel();
+
+        }
+
     }
 
     /**
@@ -420,7 +433,7 @@ public class Debouncer {
      *          </tr>
      *          </table>
      */
-    public static interface Debounce {
+    public static interface Debounce extends Closeable {
 
         /**
          * Runs the function as per the configurations used while creating this
