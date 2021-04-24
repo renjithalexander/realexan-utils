@@ -64,7 +64,7 @@ public class Debouncer {
      *                          manages the cool off.
      * @return a debounce function.
      */
-    public static Debounce prepare(ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
+    public static Debounce create(ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, ExecutorService executor) {
         return new DebounceImpl(function, coolOffTime, forcedRunInterval, immediate, executor);
     }
@@ -82,10 +82,10 @@ public class Debouncer {
      *                          the flag is true.
      * @return a debounce function.
      */
-    public static Debounce prepare(ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
+    public static Debounce create(ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, boolean runNonBlocked) {
         ExecutorService executor = runNonBlocked ? Executors.newSingleThreadExecutor() : null;
-        return prepare(function, coolOffTime, forcedRunInterval, immediate, executor);
+        return create(function, coolOffTime, forcedRunInterval, immediate, executor);
     }
 
     /**
@@ -95,8 +95,8 @@ public class Debouncer {
      * @param coolOffTime the cool off time period.
      * @return a debounce function.
      */
-    public static Debounce prepare(ThrowingRunnable function, long coolOffTime) {
-        return prepare(function, coolOffTime, -1, true, false);
+    public static Debounce create(ThrowingRunnable function, long coolOffTime) {
+        return create(function, coolOffTime, -1, true, false);
     }
 
     /**
@@ -215,10 +215,21 @@ public class Debouncer {
             return now() - execution.eventTime;
         }
 
+        /**
+         * Returns true if forced run is configured and the time elapsed since last
+         * execution time is more than forced run interval.
+         * 
+         * @return
+         */
         private boolean forceRun() {
             return forcedRunInterval > 0 && getTimeElapsedSinceLastExecution() >= forcedRunInterval;
         }
 
+        /**
+         * Returns the next submission id sequence.
+         * 
+         * @return the next submission id sequence.
+         */
         private long getNextSubmissionId() {
             long nextSubmissionId = submission.id + 1;
             if (nextSubmissionId < 0) {
@@ -227,6 +238,9 @@ public class Debouncer {
             return nextSubmissionId;
         }
 
+        /**
+         * Submits the next timer task.
+         */
         private void submit() {
             if (!isAlive) {
                 throw new IllegalStateException("Debouncer cancelled");
@@ -243,9 +257,14 @@ public class Debouncer {
                 }
                 schedule(toExecute, coolOffTime);
             }
-
+            // If schedules exists, the fire event will take care of the next scheduling.
         }
 
+        /**
+         * Calls the function.
+         * 
+         * @param id
+         */
         private void execute(long id) {
             if (executor != null) {
                 executor.submit(function);
@@ -255,6 +274,11 @@ public class Debouncer {
             execution = new State(id, now());
         }
 
+        /**
+         * Prepare the next action and execute it.
+         * 
+         * @param id
+         */
         private void eventFired(long id) {
             scheduleExists = false;
             if (submission.id == execution.id) {
@@ -284,6 +308,12 @@ public class Debouncer {
             }
         }
 
+        /**
+         * Schedules the timer task after the specified delay.
+         * 
+         * @param r
+         * @param delay
+         */
         private void schedule(DebounceTask r, long delay) {
             scheduleExists = true;
             // p("Next run scheduled for " + delay);

@@ -49,7 +49,7 @@ public class DebounceTester extends JFrame {
 
     private static JTextArea area = new JTextArea();
 
-    Debounce db = Debouncer.prepare(() -> DebounceTester.p("" + System.currentTimeMillis() / 1000), 500, 5000, true, false);
+    Debounce db = Debouncer.create(() -> DebounceTester.p("" + System.currentTimeMillis() / 1000), 500, 5000, true, false);
 
     public DebounceTester() {
         this.setBounds(100, 100, 900, 600);
