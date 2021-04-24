@@ -8,6 +8,6 @@ The main features are:
 ## Ordered Executor framework
 This is an executor framework which runs tasks with different keys in parallel, and those with identical keys in series, in the same order that they were submitted.
 
-### Use case
+### Motivation
 
 In a pub-sub messaging system, if an executor framework with multiple threads is used to deliver events to the subscribers, the messages for the same topic which are sent in rapid succession can reach the subscribers in jumbled order, as different threads in the thread pool deliver the messages. In such a case, the messages need to be ordered with their topic, without losing the parallel processing. Ordered executor framework was written to solve this issue. It runs tasks which have the same keys in series while the tasks with different keys are run in parallel. In this case the key is topic, and the client can submit as they reach.
