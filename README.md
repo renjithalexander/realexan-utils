@@ -4,6 +4,9 @@ Contains utilities that I've written at different points in time, which I though
 The main features are:
 1. OrderedExecutor framework
 2. Debounce function framework
+3. Functional utilities
+4. Thread utilities
+5. Miscellaneous utilities
 
 ## Ordered Executor framework
 This is an executor framework which runs tasks with different keys in parallel, and those with identical keys in series, in the same order that they were submitted.
