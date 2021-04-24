@@ -310,14 +310,14 @@ public class Debouncer {
             if (id != submission.id) {
                 // check if it has crossed the max delay between runs.
                 boolean mustRun = forceRun();
-                // Find the time for next run
+                // Find the delay until next run
                 long nextRun = coolOffTime - (now() - submission.eventTime);
                 // If next run is long pending, run and be done.
                 if (nextRun <= 0) {
                     execute(submission.id);
                     return;
                 }
-                // If max delay run
+                // If the delay has exceeded the maximum delay interval...
                 if (mustRun) {
                     execute(id);
                 }
