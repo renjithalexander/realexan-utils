@@ -140,9 +140,13 @@ public class Debouncer {
          */
         private final Lock lock = new ReentrantLock();
         /**
+         * The name.
+         */
+        private final String name;
+        /**
          * Timer used to schedule next potential run.
          */
-        private final Timer timer;
+        private Timer timer;
         /**
          * The actual function to be executed.
          */
@@ -197,7 +201,7 @@ public class Debouncer {
         private DebounceImpl(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
                 boolean immediate, ExecutorService executor) {
             Objects.requireNonNull(function);
-            timer = new Timer("Debounce-" + name);
+            this.name = name;
             this.function = toExceptionSuppressedRunnable(function);
             if (coolOffTime <= 0) {
                 throw new IllegalArgumentException("Invalid wait time value");
@@ -215,7 +219,9 @@ public class Debouncer {
          * Kills the Debounce function.
          */
         private void kill() {
-            timer.cancel();
+            if (timer != null) {
+                timer.cancel();
+            }
             if (executor != null) {
                 executor.shutdown();
             }
@@ -329,6 +335,9 @@ public class Debouncer {
          * @param delay
          */
         private void schedule(DebounceTask r, long delay) {
+            if (timer == null) {
+                timer = new Timer("Debounce-" + name);
+            }
             scheduleExists = true;
             // p("Next run scheduled for " + delay);
             timer.schedule(r, delay);

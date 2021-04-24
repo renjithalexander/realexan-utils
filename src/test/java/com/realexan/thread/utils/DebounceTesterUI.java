@@ -156,6 +156,7 @@ public class DebounceTesterUI extends JFrame {
         setDefaults();
         // createNew();
 
+        this.setResizable(false);
         this.setVisible(true);
 
         run.addActionListener((e) -> {
