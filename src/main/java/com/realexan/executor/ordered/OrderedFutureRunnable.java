@@ -1,6 +1,5 @@
 package com.realexan.executor.ordered;
 
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;

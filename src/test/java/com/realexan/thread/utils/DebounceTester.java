@@ -3,12 +3,16 @@
  */
 package com.realexan.thread.utils;
 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.text.DefaultCaret;
 
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
@@ -26,7 +30,7 @@ import com.realexan.thread.Debouncer.Debounce;
  *          <td width="*"><b>Description</b></td>
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
- *          <td>24-Apr-2021</td>
+ *          <td>23-Apr-2021</td>
  *          <td><a href=
  *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
  *          <td align="right">1</td>
@@ -45,16 +49,27 @@ public class DebounceTester extends JFrame {
 
     private static JTextArea area = new JTextArea();
 
-    Debounce db = Debouncer.prepare(() -> DebounceTester.p("" + System.currentTimeMillis() / 1000), 3000, 5000, true, false);
+    Debounce db = Debouncer.prepare(() -> DebounceTester.p("" + System.currentTimeMillis() / 1000), 500, 5000, true, false);
 
     public DebounceTester() {
         this.setBounds(100, 100, 900, 600);
         this.setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.add(button);
-        this.add(area);
+        //this.add(area);
         button.setBounds(10, 10, 100, 80);
-        area.setBounds(10, 100, 850, 400);
+        area.setBounds(0, 0, 890, 500);
+        area.setWrapStyleWord(true);
+        area.setEditable(false);
+        area.setFont(Font.getFont(Font.SANS_SERIF));
+        JScrollPane scroller = new JScrollPane(area);
+        scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        
+        DefaultCaret caret = (DefaultCaret) area.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        scroller.setBounds(10, 100, 850, 400);
+        this.add(scroller);
         this.setVisible(true);
 
         button.addActionListener(new ActionListener() {

@@ -28,8 +28,9 @@ public class ThreadUtils {
      * Runs a <code>ThrowingFunction</code> suppressing the exceptions thrown during
      * the run.
      * 
-     * @param fun
-     * @return
+     * @param fun the enclosing function.
+     * @return a Runnable which composes the function, and suppresses any exception
+     *         thrown.
      */
     public static Runnable toExceptionSuppressedRunnable(ThrowingRunnable fun) {
         return () -> {
@@ -57,6 +58,22 @@ public class ThreadUtils {
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Returns the current time in milliseconds.
+     * 
+     * @return the current time in milliseconds.
+     */
+    public static long now() {
+        return System.currentTimeMillis();
+    }
+
+    /**
+     * Sleeps the current thread.
+     */
+    public static void sleep(long delay) {
+        toExceptionSuppressedRunnable(() -> Thread.sleep(delay)).run();
     }
 
 }
