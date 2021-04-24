@@ -1,8 +1,7 @@
 /**
  * 
  */
-package com.realexan.thread.utils;
-
+package com.realexan.thread;
 
 import java.util.Objects;
 import java.util.Timer;
@@ -10,10 +9,12 @@ import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.realexan.common.ThrowingRunnable;
+import static com.realexan.common.ThreadUtils.toExceptionSuppressedRunnable;
+import static com.realexan.common.ThreadUtils.runWithLock;;;
+
 /**
  * 
- * 
- *
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version
  *          <table border="1" cellpadding="3" cellspacing="0" width="95%">
@@ -25,18 +26,16 @@ import java.util.concurrent.locks.ReentrantLock;
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
  *          <td>23-Apr-2021</td>
- *          <td><a href="mailto:renjithalexander@gmail.com">Renjith
- *          Alexander</a></td>
+ *          <td><a href=
+ *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
  *          </table>
- *
- * 
  */
 public class Debouncer {
 
-    public static Debounce prepare(ThrowingFunction function, long wait, long maxDelayBetweenExecutions,
+    public static Debounce prepare(ThrowingRunnable function, long wait, long maxDelayBetweenExecutions,
             boolean immediate) {
         DebounceImpl state = new DebounceImpl(function, wait, maxDelayBetweenExecutions, immediate);
         return state;
@@ -64,8 +63,8 @@ public class Debouncer {
 
         private volatile State execution = new State(-1, 0);
 
-
-        public DebounceImpl(ThrowingFunction function, long waitTime, long maxDelayBetweenExecutions, boolean immediate) {
+        private DebounceImpl(ThrowingRunnable function, long waitTime, long maxDelayBetweenExecutions,
+                boolean immediate) {
             Objects.requireNonNull(function);
             this.function = toExceptionSuppressedRunnable(function);
             if (waitTime <= 0) {
@@ -83,7 +82,7 @@ public class Debouncer {
             timer.cancel();
             this.isAlive = false;
         }
-        
+
         private long getTimeElapsedSinceLastExecution() {
             if (execution.eventTime == 0) {
                 return 0;
@@ -91,11 +90,10 @@ public class Debouncer {
             return now() - execution.eventTime;
         }
 
-
-        public boolean forceRun() {
+        private boolean forceRun() {
             return maxDelayBetweenExecutions > 0 && getTimeElapsedSinceLastExecution() >= maxDelayBetweenExecutions;
         }
-        
+
         private long getNextSubmissionId() {
             long nextSubmissionId = submission.id + 1;
             if (nextSubmissionId < 0) {
@@ -104,13 +102,13 @@ public class Debouncer {
             return nextSubmissionId;
         }
 
-        public void submit() {
+        private void submit() {
             if (!isAlive) {
                 throw new IllegalStateException("Debouncer cancelled");
             }
-            
+
             submission = new State(getNextSubmissionId(), now());
-            //p("Submission id is " + submission.id);
+            // p("Submission id is " + submission.id);
 
             if (!scheduleExists) {
                 DebounceTask toExecute = new DebounceTask(submission.id);
@@ -127,17 +125,18 @@ public class Debouncer {
             function.run();
             execution = new State(id, now());
         }
-        
-        public void eventFired(long id) {
+
+        private void eventFired(long id) {
             scheduleExists = false;
-            //p("eventfired...id: " + id + ", sub id: " + submission.id + ", exe id:" + execution.id);
+            // p("eventfired...id: " + id + ", sub id: " + submission.id + ", exe id:" +
+            // execution.id);
             if (submission.id == execution.id) {
                 // do nothing. This is just cool off.
                 return;
-            } 
+            }
             // If there are more submissions.
             if (id != submission.id) {
-               // check if it has crossed the max delay between runs.
+                // check if it has crossed the max delay between runs.
                 boolean mustRun = forceRun();
                 // Find the time for next run
                 long nextRun = waitTime - (now() - submission.eventTime);
@@ -148,7 +147,7 @@ public class Debouncer {
                 }
                 // If max delay run
                 if (mustRun) {
-                    //p("Must run exe");
+                    // p("Must run exe");
                     execute(id);
                 }
                 // Schedule for next run.
@@ -159,19 +158,38 @@ public class Debouncer {
             }
         }
 
-
         private void schedule(DebounceTask r, long delay) {
             scheduleExists = true;
-            //p("Next run scheduled for " + delay);
+            // p("Next run scheduled for " + delay);
             timer.schedule(r, delay);
         }
 
-
+        /**
+         * The TimerTask for Debounce.
+         * 
+         * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
+         * @version
+         *          <table border="1" cellpadding="3" cellspacing="0" width="95%">
+         *          <tr bgcolor="#EEEEFF" id="TableSubHeadingColor">
+         *          <td width="10%"><b>Date</b></td>
+         *          <td width="10%"><b>Author</b></td>
+         *          <td width="10%"><b>Version</b></td>
+         *          <td width="*"><b>Description</b></td>
+         *          </tr>
+         *          <tr bgcolor="white" id="TableRowColor">
+         *          <td>23-Apr-2021</td>
+         *          <td><a href=
+         *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
+         *          <td align="right">1</td>
+         *          <td>Creation</td>
+         *          </tr>
+         *          </table>
+         */
         private class DebounceTask extends TimerTask {
 
             private final long id;
 
-            public DebounceTask(long submissionId) {
+            private DebounceTask(long submissionId) {
                 this.id = submissionId;
             }
 
@@ -181,6 +199,27 @@ public class Debouncer {
             }
         }
 
+        /**
+         * Execution state.
+         * 
+         * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
+         * @version
+         *          <table border="1" cellpadding="3" cellspacing="0" width="95%">
+         *          <tr bgcolor="#EEEEFF" id="TableSubHeadingColor">
+         *          <td width="10%"><b>Date</b></td>
+         *          <td width="10%"><b>Author</b></td>
+         *          <td width="10%"><b>Version</b></td>
+         *          <td width="*"><b>Description</b></td>
+         *          </tr>
+         *          <tr bgcolor="white" id="TableRowColor">
+         *          <td>23-Apr-2021</td>
+         *          <td><a href=
+         *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
+         *          <td align="right">1</td>
+         *          <td>Creation</td>
+         *          </tr>
+         *          </table>
+         */
         private class State {
 
             final long id;
@@ -208,36 +247,7 @@ public class Debouncer {
         return System.currentTimeMillis();
     }
 
-    private static void runWithLock(Lock lock, ThrowingFunction fn) {
-        lock.lock();
-        try {
-            fn.execute();
-        } catch (Throwable e) {
-            throw new RuntimeException("Exception while calling function", e);
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    @FunctionalInterface
-    public static interface ThrowingFunction {
-        void execute() throws Throwable;
-    }
-
-    /**
-     * Runs a <code>ThrowingFunction</code> suppressing the exceptions thrown during the run.
-     * @param fun
-     * @return
-     */
-    public static Runnable toExceptionSuppressedRunnable(ThrowingFunction fun) {
-        return () -> {
-            try {
-                fun.execute();
-            } catch (Throwable t) {
-
-            }
-        };
-    }
+    
 
     /**
      * The Debounce function interface.
@@ -252,8 +262,9 @@ public class Debouncer {
      *          <td width="*"><b>Description</b></td>
      *          </tr>
      *          <tr bgcolor="white" id="TableRowColor">
-     *          <td>24-Apr-2021</td>
-     *          <td><a href="mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
+     *          <td>23-Apr-2021</td>
+     *          <td><a href=
+     *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
      *          <td align="right">1</td>
      *          <td>Creation</td>
      *          </tr>
@@ -261,8 +272,15 @@ public class Debouncer {
      */
     public static interface Debounce {
 
+        /**
+         * Runs the function as per the configurations used while creating this
+         * function. Throws IlegalStateException if the function has been cancelled.
+         */
         void run();
 
+        /**
+         * Cancels the function.
+         */
         void cancel();
     }
 

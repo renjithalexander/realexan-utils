@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.realexan.thread.utils.NamedThreadFactory;
+import com.realexan.thread.NamedThreadFactory;
 
 /**
  * 

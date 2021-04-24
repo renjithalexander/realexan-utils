@@ -10,13 +10,12 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 
-import com.realexan.thread.utils.Debouncer.Debounce;
-
+import com.realexan.thread.Debouncer;
+import com.realexan.thread.Debouncer.Debounce;
 
 /**
+ * Tests the Debounce functionality through a simple UI.
  * 
- * 
- *
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version
  *          <table border="1" cellpadding="3" cellspacing="0" width="95%">
@@ -27,23 +26,27 @@ import com.realexan.thread.utils.Debouncer.Debounce;
  *          <td width="*"><b>Description</b></td>
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
- *          <td>23-Apr-2021</td>
- *          <td><a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a></td>
+ *          <td>24-Apr-2021</td>
+ *          <td><a href=
+ *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
  *          </table>
- *
  */
-public class DebounceTester extends JFrame{
-    
+public class DebounceTester extends JFrame {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     private JButton button = new JButton("Run");
-    
-    
+
     private static JTextArea area = new JTextArea();
-    
-    Debounce db = Debouncer.prepare(() -> DebounceTester.p(""+System.currentTimeMillis()/1000), 3000, 5000, true);
-    
+
+    Debounce db = Debouncer.prepare(() -> DebounceTester.p("" + System.currentTimeMillis() / 1000), 3000, 5000, true);
+
     public DebounceTester() {
         this.setBounds(100, 100, 900, 600);
         this.setLayout(null);
@@ -53,21 +56,22 @@ public class DebounceTester extends JFrame{
         button.setBounds(10, 10, 100, 80);
         area.setBounds(10, 100, 850, 400);
         this.setVisible(true);
-        
+
         button.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //System.out.println(e);
+                // System.out.println(e);
                 db.run();
-            }});
+            }
+        });
     }
-    
-    public static void main(String...args) throws Exception {
+
+    public static void main(String... args) throws Exception {
         DebounceTester t = new DebounceTester();
-        
+
     }
-    
+
     public static void p(String s) {
         String txt = area.getText() + "\n" + s;
         area.setText(txt);
