@@ -23,11 +23,12 @@ import com.realexan.functional.functions.ThrowingRunnable;;;
  * 
  * A debounce functionality, which prevents flooded execution of functions on
  * flurry of triggers. It allows to have a cool off period between executions,
- * which gets extended with each trigger . It can be configured to force run at
+ * which gets extended with each trigger. It can be configured to force run at
  * specific intervals in case the triggers delay the execution for too long.
  * <p>
  * The function can be configured to execute immediately on the first trigger
- * and then wait to cool off, or delay the execution until the cool off period.
+ * and then wait to cool off, or delay the execution until the cool off
+ * period.<br>
  * It can also be configured to do the executions on a separate
  * SingleThreadedExecutor, so that the delay in executions won't add up to the
  * delays in scheduling.
