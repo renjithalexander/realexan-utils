@@ -3,9 +3,13 @@
  */
 package com.realexan.thread.utils;
 
+import static com.realexan.common.ThreadUtils.now;
+import static com.realexan.common.ThreadUtils.stackTraceToString;
+
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -19,7 +23,6 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.DefaultCaret;
 
-import static com.realexan.common.ThreadUtils.*;
 import com.realexan.common.ThrowingRunnable;
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
@@ -93,6 +96,8 @@ public class DebounceTesterUI extends JFrame {
 
     private Debounce db = null;
 
+    private boolean dirty = true;
+
     public DebounceTesterUI() {
         this.setTitle("Realexan Debouncer test");
         this.setBounds(100, 100, 900, 600);
@@ -136,28 +141,33 @@ public class DebounceTesterUI extends JFrame {
         this.add(scroller);
 
         setDefaults();
-        createNew();
+        // createNew();
 
         this.setVisible(true);
 
-        run.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (startTime == 0) {
-                    startTime = now();
-                }
-                db.run();
-            }
-        });
-
-        create.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        run.addActionListener((e) -> {
+            if (dirty) {
                 createNew();
+                dirty = false;
             }
+            if (startTime == 0) {
+                startTime = now();
+            }
+            db.run();
         });
+
+        create.addActionListener((e) -> createNew());
+
+        KeyListener dirtyListener = new KeyAdapter() {
+            public void keyPressed(KeyEvent ke) {
+                dirty = true;
+            }
+        };
+        coolOff.addKeyListener(dirtyListener);
+        forcedRun.addKeyListener(dirtyListener);
+        immediate.addActionListener((e) -> dirty = true);
+        nonBlocking.addActionListener((e) -> dirty = true);
+
     }
 
     private void createNew() {
@@ -176,7 +186,7 @@ public class DebounceTesterUI extends JFrame {
             }
             db = newDb;
 
-            p("\n");
+            // p("\n");
             p("------------------------------------------------------------------------------");
             p("New Debounce function created with values (" + _coolOff + ", " + _forcedRun + ", " + _immediate + ", "
                     + _nonBlocking + ")");
@@ -205,7 +215,12 @@ public class DebounceTesterUI extends JFrame {
     }
 
     public static void p(String s) {
-        String txt = area.getText() + "\n" + s;
+        String txt = area.getText();
+        if (!txt.isEmpty()) {
+            txt = txt + "\n" + s;
+        } else {
+            txt = s;
+        }
         area.setText(txt);
         System.out.println(s);
     }

@@ -59,7 +59,10 @@ public class Debouncer {
      * @param function          the actual function to be executed.
      * @param coolOffTime       the cool off time period.
      * @param forcedRunInterval the interval for forced execution of the function,
-     *                          in case the triggers don't cease for too long.
+     *                          in case the triggers don't cease for too long. A
+     *                          negative value means this is disregarded. A non
+     *                          negative value lesser than coolOffTime will cause to
+     *                          use coolOffTime instead.
      * @param immediate         flag to denote whether to execute the function
      *                          immediately on the trigger or wait until cool off.
      * @param executor          the executor to be used to run the function. If
@@ -79,7 +82,10 @@ public class Debouncer {
      * @param function          the actual function to be executed.
      * @param coolOffTime       the cool off time period.
      * @param forcedRunInterval the interval for forced execution of the function,
-     *                          in case the triggers don't cease for too long.
+     *                          in case the triggers don't cease for too long. A
+     *                          negative value means this is disregarded. A non
+     *                          negative value lesser than coolOffTime will cause to
+     *                          use coolOffTime instead.
      * @param immediate         flag to denote whether to execute the function
      *                          immediately on the trigger or wait until cool off.
      * @param runNonBlocked     runs the function in a single threaded executor if
@@ -88,7 +94,9 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, boolean runNonBlocked) {
-        ExecutorService executor = runNonBlocked ? Executors.newSingleThreadExecutor() : null;
+        ExecutorService executor = runNonBlocked
+                ? Executors.newSingleThreadExecutor(new NamedThreadFactory("Debounce-" + name + "-Threadpool"))
+                : null;
         return create(name, function, coolOffTime, forcedRunInterval, immediate, executor);
     }
 
