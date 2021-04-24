@@ -1,4 +1,4 @@
-package com.realexan.common;
+package com.realexan.functional.functions;
 
 /**
  * 

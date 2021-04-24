@@ -12,7 +12,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.realexan.common.ThreadUtils;
-import com.realexan.common.ThrowingRunnable;
+import com.realexan.functional.functions.ThrowingRunnable;
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
 

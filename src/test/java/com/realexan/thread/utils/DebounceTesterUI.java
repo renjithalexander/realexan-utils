@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.DefaultCaret;
 
-import com.realexan.common.ThrowingRunnable;
+import com.realexan.functional.functions.ThrowingRunnable;
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
 

@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.locks.Lock;
 
+import com.realexan.functional.functions.ThrowingRunnable;
+
 /**
  * 
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>

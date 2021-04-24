@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.realexan.common.ThrowingRunnable;;;
+import com.realexan.functional.functions.ThrowingRunnable;;;
 
 /**
  * 
