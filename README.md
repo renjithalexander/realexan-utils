@@ -14,7 +14,7 @@ This is an executor framework which runs tasks with different keys in parallel, 
 ### Motivation
 
 In a pub-sub messaging system, if an executor framework with multiple threads is used to deliver events to the subscribers, the messages for the same topic which are sent in rapid succession can reach the subscribers in a jumbled order, as different threads in the thread pool are delivering the messages. In such a case, the messages need to be ordered according the natural order of their topics, or the ordering defined by the OrderedRunnable.getOrderingKey(), without losing the parallel processing capability.<br>
-Ordered executor framework was written to solve this issue. It runs tasks which have the same keys, in series, while the tasks with different keys are run in parallel. In this particular example, the key is the pub-sub topic. To state the obvious, the tasks are additionally expected to have an ordering key, or, in other words, the tasks must implement [OrderedRunnable](./src/main/java/com/realexan/executor/ordered/OrderedRunnable.java).
+Ordered executor framework was written to solve this issue. It runs tasks which have the same keys, in series, while the tasks with different keys are run in parallel. <p><p>In this particular example, the key is the pub-sub topic. To state the obvious, the tasks are additionally expected to have an ordering key, or, in other words, the tasks must implement [OrderedRunnable](./src/main/java/com/realexan/executor/ordered/OrderedRunnable.java).
 
 ### Example
 
