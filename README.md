@@ -48,7 +48,7 @@ In a pub-sub messaging system, if an executor framework with multiple threads is
                     new TestOrderedRunnable("8", "c"), new TestOrderedRunnable("9", "d") };
                     
     for(TestOrderedRunnable r: tests) {
-    		executor.submit(r);
+    	    executor.submit(r);
     }
     
     // Result sequence for shared key executables would be:
