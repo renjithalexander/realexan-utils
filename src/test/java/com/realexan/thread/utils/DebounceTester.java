@@ -16,12 +16,8 @@ import com.realexan.thread.utils.Debouncer.Debounce;
 /**
  * 
  * 
- * @copyright Cisco Systems Confidential Copyright (c) 2021 by Cisco Systems,
- *            Inc. All Rights Reserved.
  *
- * @group CCBU Finesse Team
- *
- * @author <a href="mailto:realexan@cisco.com">Renjith Alexander</a>
+ * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version
  *          <table border="1" cellpadding="3" cellspacing="0" width="95%">
  *          <tr bgcolor="#EEEEFF" id="TableSubHeadingColor">
@@ -32,13 +28,12 @@ import com.realexan.thread.utils.Debouncer.Debounce;
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
  *          <td>23-Apr-2021</td>
- *          <td><a href="mailto:realexan@cisco.com">realexan</a></td>
+ *          <td><a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a></td>
  *          <td align="right">1</td>
  *          <td>Creation</td>
  *          </tr>
  *          </table>
  *
- * @since Finesse 12.6.1
  */
 public class DebounceTester extends JFrame{
     
