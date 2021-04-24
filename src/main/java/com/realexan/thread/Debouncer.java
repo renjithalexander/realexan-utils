@@ -277,7 +277,7 @@ public class Debouncer {
                 }
                 schedule(toExecute, coolOffTime);
             }
-            // If schedules exists, the fire event will take care of the next scheduling.
+            // If schedules exist, the fire event will take care of the next scheduling.
         }
 
         /**
