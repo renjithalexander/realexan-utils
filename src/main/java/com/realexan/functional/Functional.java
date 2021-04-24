@@ -6,6 +6,7 @@ package com.realexan.functional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.realexan.functional.trial.Try;
 
@@ -83,6 +84,19 @@ public class Functional {
         }
     }
 
+    /**
+     * Transforms the input to the output using the transformer.
+     * 
+     * @param <T>         the type of input.
+     * @param <R>         the type of output.
+     * @param input       the input.
+     * @param transformer the transformer.
+     * @return the transformed output.
+     */
+    public static <T, R> R transform(T input, Function<T, R> transformer) {
+        return transformer.apply(input);
+    }
+
     public static void main(String... args) {
         List<String> strs = new ArrayList<>();
         for (int i = 1; i <= 100; ++i) {
@@ -92,7 +106,7 @@ public class Functional {
 
         String[] arr = new String[100];
         for (int i = 1; i <= 100; ++i) {
-            arr[i-1] = "" + i;
+            arr[i - 1] = "" + i;
         }
         consume(arr, System.out::println);
     }
