@@ -38,7 +38,7 @@ public class Try<T, U> {
         this.function = getFunction(function);
     }
 
-    public <Y, Z> Try<T, Z> then(Try<U, Z> another, Try<U, Z> onFailure) {
+    public <Z> Try<T, Z> then(Try<U, Z> another, Try<U, Z> onFailure) {
         Objects.requireNonNull(another);
         Objects.requireNonNull(onFailure);
         return new Try<>((ThrowingFunction<T, Z>) (t) -> {
@@ -55,7 +55,7 @@ public class Try<T, U> {
         });
     }
 
-    public <Y, Z> Try<T, Z> then(Try<U, Z> another) {
+    public <Z> Try<T, Z> then(Try<U, Z> another) {
         Objects.requireNonNull(another);
         return new Try<>((ThrowingFunction<T, Z>) (t) -> {
             TryResult<T, U> result = this.tryIt(t);
@@ -73,7 +73,7 @@ public class Try<T, U> {
         });
     }
 
-    public <Y, Z> Try<T, Z> then(ThrowingFunction<U, Z> function) {
+    public <Z> Try<T, Z> then(ThrowingFunction<U, Z> function) {
         return this.then(new Try<>(function));
     }
 
