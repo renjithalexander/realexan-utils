@@ -62,3 +62,11 @@ Ordered executor framework was written to solve this issue. It runs tasks which 
     // 9 (key d)
 
 ```
+
+## Debounce Function Framework
+
+A framework that enables debouncing functionality.
+
+### Motivation
+
+Certain triggers were supposed to clear a certain cache, and the cache clearing required spawning of a bash process from the java code. However, at a certain point of time a new trigger was added, which was likely to fire in burst mode- up to 24000 in a batch, within a duration of 5-10 seconds. Had to restrict the spawning of so many cache clearing process in such a short duration.

@@ -199,6 +199,7 @@ public class DebounceTesterUI extends JFrame {
                 db.cancel();
             }
             db = newDb;
+            startTime = now();
 
             // p("\n");
             p("------------------------------------------------------------------------------");
