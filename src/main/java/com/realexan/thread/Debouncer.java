@@ -57,7 +57,7 @@ public class Debouncer {
      * The default idle timeout to kill the timer if no scheduling happens for the
      * duration.
      */
-    private static final long TIMER_KEEPALIVE_TIME = 60_000;
+    private static final long DEFAULT_IDLE_TIMER_KEEPALIVE_TIME = 60_000;
 
     /**
      * Returns a debounce function.
@@ -107,7 +107,7 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, ExecutorService executor) {
-        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor, TIMER_KEEPALIVE_TIME);
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor, DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
     }
 
     /**
@@ -159,7 +159,7 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, boolean runNonBlocked) {
-        return create(name, function, coolOffTime, forcedRunInterval, immediate, runNonBlocked, TIMER_KEEPALIVE_TIME);
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, runNonBlocked, DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
     }
 
     /**
@@ -422,7 +422,7 @@ public class Debouncer {
          */
         private void scheduleIdleCheck() {
             if (timer != null && idleTimeout > 0) {
-                timer.schedule(new IdleTimeoutTask(submission.id), TIMER_KEEPALIVE_TIME);
+                timer.schedule(new IdleTimeoutTask(submission.id), DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
             }
         }
 
