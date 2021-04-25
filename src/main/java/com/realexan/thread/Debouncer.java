@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.realexan.functional.functions.ThrowingRunnable;;;
+import com.realexan.functional.functions.ThrowingRunnable;
 
 /**
  * 
@@ -54,6 +54,40 @@ import com.realexan.functional.functions.ThrowingRunnable;;;
 public class Debouncer {
 
     /**
+     * The default idle timeout to kill the timer if no scheduling happens for the
+     * duration.
+     */
+    private static final long TIMER_KEEPALIVE_TIME = 60_000;
+
+    /**
+     * Returns a debounce function.
+     * 
+     * @param name              the name of the debounce function.
+     * @param function          the actual function to be executed.
+     * @param coolOffTime       the cool off time period.
+     * @param forcedRunInterval the interval for forced execution of the function,
+     *                          in case the triggers don't cease for too long. A
+     *                          negative value means this is disregarded. A non
+     *                          negative value lesser than coolOffTime will cause to
+     *                          use coolOffTime instead.
+     * @param immediate         flag to denote whether to execute the function
+     *                          immediately on the trigger or wait until cool off.
+     * @param executor          the executor to be used to run the function. If
+     *                          null, the runs will happen on scheduler thread which
+     *                          manages the cool off.
+     * @param idleThreadTimeout The idle timeout for scheduler thread, beyond which
+     *                          the timer will be killed. It will be recreated when
+     *                          the subsequent scheduling happens.This is to save
+     *                          thread resources. A negative value means the
+     *                          scheduler thread will be kept alive.
+     * @return a debounce function.
+     */
+    public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
+            boolean immediate, ExecutorService executor, long idleThreadTimeout) {
+        return new DebounceImpl(name, function, coolOffTime, forcedRunInterval, immediate, executor, idleThreadTimeout);
+    }
+
+    /**
      * Returns a debounce function.
      * 
      * @param name              the name of the debounce function.
@@ -73,7 +107,37 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, ExecutorService executor) {
-        return new DebounceImpl(name, function, coolOffTime, forcedRunInterval, immediate, executor);
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor, TIMER_KEEPALIVE_TIME);
+    }
+
+    /**
+     * Returns a debounce function.
+     * 
+     * @param name              the name of the debounce function.
+     * @param function          the actual function to be executed.
+     * @param coolOffTime       the cool off time period.
+     * @param forcedRunInterval the interval for forced execution of the function,
+     *                          in case the triggers don't cease for too long. A
+     *                          negative value means this is disregarded. A non
+     *                          negative value lesser than coolOffTime will cause to
+     *                          use coolOffTime instead.
+     * @param immediate         flag to denote whether to execute the function
+     *                          immediately on the trigger or wait until cool off.
+     * @param runNonBlocked     runs the function in a single threaded executor if
+     *                          the flag is true.
+     * @param idleThreadTimeout The idle timeout for scheduler thread, beyond which
+     *                          the timer will be killed. It will be recreated when
+     *                          the subsequent scheduling happens.This is to save
+     *                          thread resources. A negative value means the
+     *                          scheduler thread will be kept alive.
+     * @return a debounce function.
+     */
+    public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
+            boolean immediate, boolean runNonBlocked, long idleThreadTimeout) {
+        ExecutorService executor = runNonBlocked
+                ? Executors.newSingleThreadExecutor(new NamedThreadFactory("Debounce-" + name + "-Threadpool"))
+                : null;
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor, idleThreadTimeout);
     }
 
     /**
@@ -95,10 +159,7 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, boolean runNonBlocked) {
-        ExecutorService executor = runNonBlocked
-                ? Executors.newSingleThreadExecutor(new NamedThreadFactory("Debounce-" + name + "-Threadpool"))
-                : null;
-        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor);
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, runNonBlocked, TIMER_KEEPALIVE_TIME);
     }
 
     /**
@@ -176,6 +237,10 @@ public class Debouncer {
          */
         private volatile boolean isAlive = true;
         /**
+         * The scheduler idle timeout.
+         */
+        private final long idleTimeout;
+        /**
          * Flag denoting that there is a schedule yet to be fired.
          */
         private volatile boolean scheduleExists = false;
@@ -197,10 +262,13 @@ public class Debouncer {
          *                          execution too long.
          * @param immediate         flag to denote whether to execute the function
          *                          immediately on the trigger or wait until cool off.
+         * @param idleTimeout       The idle timeout for timer thread, beyond which the
+         *                          timer will be killed. It will be recreated when the
+         *                          subsequent scheduling happens.
          * @param executor          the executor to be used to run the function.
          */
         private DebounceImpl(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
-                boolean immediate, ExecutorService executor) {
+                boolean immediate, ExecutorService executor, long idleTimeout) {
             Objects.requireNonNull(function);
             this.name = name;
             this.function = toExceptionSuppressedRunnable(function);
@@ -214,6 +282,7 @@ public class Debouncer {
             this.forcedRunInterval = forcedRunInterval;
             this.immediate = immediate;
             this.executor = executor;
+            this.idleTimeout = idleTimeout;
         }
 
         /**
@@ -296,7 +365,8 @@ public class Debouncer {
         }
 
         /**
-         * Prepare the next action and execute it.
+         * Prepare the next action and execute it. If no run scheduling is done,
+         * schedules an idle check task.
          * 
          * @param id
          */
@@ -304,6 +374,7 @@ public class Debouncer {
             scheduleExists = false;
             if (submission.id == execution.id) {
                 // do nothing. This is just cool off.
+                scheduleIdleCheck();
                 return;
             }
             // If there are more submissions.
@@ -315,6 +386,7 @@ public class Debouncer {
                 // If next run is long pending, run and be done.
                 if (nextRun <= 0) {
                     execute(submission.id);
+                    scheduleIdleCheck();
                     return;
                 }
                 // If the delay has exceeded the maximum delay interval...
@@ -323,9 +395,10 @@ public class Debouncer {
                 }
                 // Schedule for next run.
                 schedule(new DebounceTask(submission.id), nextRun);
-            } else if (id == submission.id) {
+            } else {
                 // This one is the latest submission. Run and be done.
                 execute(id);
+                scheduleIdleCheck();
             }
         }
 
@@ -342,6 +415,32 @@ public class Debouncer {
             scheduleExists = true;
             // p("Next run scheduled for " + delay);
             timer.schedule(r, delay);
+        }
+
+        /**
+         * Schedules an IdleTimeoutTask if idle timeout is configured.
+         */
+        private void scheduleIdleCheck() {
+            if (timer != null && idleTimeout > 0) {
+                timer.schedule(new IdleTimeoutTask(submission.id), TIMER_KEEPALIVE_TIME);
+            }
+        }
+
+        /**
+         * If there have been no tasks for the idle time, kill the timer. The timer will
+         * be recreated when the next scheduling happens.
+         * 
+         * @param lastSubmissionId the submission id when the idle timer task was
+         *                         scheduled.
+         */
+        private void idleCheck(long lastSubmissionId) {
+            // No new submissions after lastSubmissionId
+            if (submission.id == lastSubmissionId) {
+                if (timer != null) {
+                    timer.cancel();
+                    timer = null;
+                }
+            }
         }
 
         /**
@@ -367,7 +466,7 @@ public class Debouncer {
          */
         private class DebounceTask extends TimerTask {
 
-            private final long id;
+            protected final long id;
 
             private DebounceTask(long submissionId) {
                 this.id = submissionId;
@@ -377,6 +476,41 @@ public class Debouncer {
             public void run() {
                 runWithLock(lock, () -> DebounceImpl.this.eventFired(id));
             }
+        }
+
+        /**
+         * The task which kills the timer in case it stays idle for the defined idle
+         * timeout.
+         * 
+         * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
+         * @version
+         *          <table border="1" cellpadding="3" cellspacing="0" width="95%">
+         *          <tr bgcolor="#EEEEFF" id="TableSubHeadingColor">
+         *          <td width="10%"><b>Date</b></td>
+         *          <td width="10%"><b>Author</b></td>
+         *          <td width="10%"><b>Version</b></td>
+         *          <td width="*"><b>Description</b></td>
+         *          </tr>
+         *          <tr bgcolor="white" id="TableRowColor">
+         *          <td>25-Apr-2021</td>
+         *          <td><a href=
+         *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
+         *          <td align="right">1</td>
+         *          <td>Creation</td>
+         *          </tr>
+         *          </table>
+         */
+        private class IdleTimeoutTask extends DebounceTask {
+
+            private IdleTimeoutTask(long lastSubmissionId) {
+                super(lastSubmissionId);
+            }
+
+            @Override
+            public void run() {
+                runWithLock(lock, () -> DebounceImpl.this.idleCheck(id));
+            }
+
         }
 
         /**
