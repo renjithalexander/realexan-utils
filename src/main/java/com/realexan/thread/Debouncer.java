@@ -107,7 +107,8 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, ExecutorService executor) {
-        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor, DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, executor,
+                DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
     }
 
     /**
@@ -159,7 +160,8 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, boolean runNonBlocked) {
-        return create(name, function, coolOffTime, forcedRunInterval, immediate, runNonBlocked, DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
+        return create(name, function, coolOffTime, forcedRunInterval, immediate, runNonBlocked,
+                DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
     }
 
     /**
@@ -233,13 +235,14 @@ public class Debouncer {
          */
         private final ExecutorService executor;
         /**
-         * The flag which denotes whether the function is alive or not.
-         */
-        private volatile boolean isAlive = true;
-        /**
          * The scheduler idle timeout.
          */
         private final long idleTimeout;
+
+        /**
+         * The flag which denotes whether the function is alive or not.
+         */
+        private volatile boolean isAlive = true;
         /**
          * Flag denoting that there is a schedule yet to be fired.
          */
@@ -422,7 +425,7 @@ public class Debouncer {
          */
         private void scheduleIdleCheck() {
             if (timer != null && idleTimeout > 0) {
-                timer.schedule(new IdleTimeoutTask(submission.id), DEFAULT_IDLE_TIMER_KEEPALIVE_TIME);
+                timer.schedule(new IdleTimeoutTask(submission.id), idleTimeout);
             }
         }
 
