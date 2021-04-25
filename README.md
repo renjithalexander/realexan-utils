@@ -55,7 +55,7 @@ Ordered executor framework was written to solve this issue. It runs tasks which 
     	    executor.submit(r);
     }
     
-    // The defined sequence of execution for the shared key executables would be:
+    // The assured sequence of execution for the shared key executables would be:
     // 1->2 (key a)
     // 3->5->6 (key b)
     // 4->7->8 (key c)
