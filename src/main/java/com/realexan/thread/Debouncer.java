@@ -238,7 +238,6 @@ public class Debouncer {
          * The scheduler idle timeout.
          */
         private final long idleTimeout;
-
         /**
          * The flag which denotes whether the function is alive or not.
          */
@@ -255,6 +254,12 @@ public class Debouncer {
          * The last executed state.
          */
         private volatile State execution = new State(-1, 0);
+        /**
+         * The last scheduled idle check task. This will be cancelled and the timer
+         * purged when a new idle check task is scheduled, and the new task will be set
+         * to this reference.
+         */
+        private volatile IdleTimeoutTask lastScheduledIdleCheck = null;
 
         /**
          * Constructor.
@@ -332,7 +337,13 @@ public class Debouncer {
         }
 
         /**
-         * Submits the next timer task.
+         * Submits the next timer task. The idea is to not schedule more than one timer
+         * task so that thousands of submits won't hog the timer task queue. When the
+         * nearest timer fires, the next course of action is identified - schedule
+         * another run or schedule an idle check task for shutting down the timer
+         * thread(if configured so).<br>
+         * At any point of time, there will be a maximum of only one run task and one
+         * idle check task scheduled in the timer.
          */
         private void submit() {
             if (!isAlive) {
@@ -350,7 +361,7 @@ public class Debouncer {
                 }
                 schedule(toExecute, coolOffTime);
             }
-            // If schedules exist, the fire event will take care of the next scheduling.
+            // If schedules exist, its fire event will take care of the next scheduling.
         }
 
         /**
@@ -425,24 +436,35 @@ public class Debouncer {
          */
         private void scheduleIdleCheck() {
             if (timer != null && idleTimeout > 0) {
-                timer.schedule(new IdleTimeoutTask(submission.id), idleTimeout);
+                if (this.lastScheduledIdleCheck != null) {
+                    this.lastScheduledIdleCheck.cancel();
+                    // There will be at most two items in the queue, which is a heap data structure.
+                    // Thus removing the cancelled tasks through purge would be quick.
+                    timer.purge();
+                }
+                this.lastScheduledIdleCheck = new IdleTimeoutTask(submission.id);
+                timer.schedule(this.lastScheduledIdleCheck, idleTimeout);
             }
         }
 
         /**
          * If there have been no tasks for the idle time, kill the timer. The timer will
-         * be recreated when the next scheduling happens.
+         * be recreated when the next scheduling happens.This way there will not be any
+         * overhead of having an idle thread for non frequently used Debounce functions.
          * 
          * @param lastSubmissionId the submission id when the idle timer task was
          *                         scheduled.
          */
-        private void idleCheck(long lastSubmissionId) {
+        private void idleCheck(IdleTimeoutTask idleCheckTask) {
             // No new submissions after lastSubmissionId
-            if (submission.id == lastSubmissionId) {
+            if (submission.id == idleCheckTask.id) {
                 if (timer != null) {
                     timer.cancel();
                     timer = null;
                 }
+            }
+            if (idleCheckTask.equals(this.lastScheduledIdleCheck)) {
+                this.lastScheduledIdleCheck = null;
             }
         }
 
@@ -511,7 +533,7 @@ public class Debouncer {
 
             @Override
             public void run() {
-                runWithLock(lock, () -> DebounceImpl.this.idleCheck(id));
+                runWithLock(lock, () -> DebounceImpl.this.idleCheck(this));
             }
 
         }

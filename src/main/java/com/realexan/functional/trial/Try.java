@@ -7,6 +7,8 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.realexan.functional.functions.ThrowingFunction;
+
 /**
  * 
  * 
@@ -156,11 +158,6 @@ public class Try<T, U> {
         return result.isSuccess() ? result.getOutput() : defaultVal;
     }
 
-    @FunctionalInterface
-    public interface ThrowingFunction<T, U> {
-
-        U apply(T input) throws Throwable;
-    }
 
     @FunctionalInterface
     public interface TestFunction<T> extends ThrowingFunction<T, Void> {
