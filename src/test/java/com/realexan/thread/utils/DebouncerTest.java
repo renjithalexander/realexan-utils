@@ -1,6 +1,10 @@
 package com.realexan.thread.utils;
 
-import java.awt.event.ActionEvent;
+import static com.realexan.functional.Functional.forLoop;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +12,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.realexan.common.ThreadUtils;
@@ -52,31 +55,34 @@ public class DebouncerTest {
     }
 
     @Test
+    public void testCreateAndCancel() throws Exception {
+        debounce = Debouncer.create(name, () -> {
+        }, 1000);
+        assertNotNull(debounce);
+        for (int i = 0; i < 100; ++i) {
+            debounce.run();
+        }
+
+    }
+
+    @Test
     public void testDebouncerInitialExecutionsWithCoolOff() throws Exception {
         TestRunnable function = new TestRunnable();
         debounce = Debouncer.create(name, function, 1000);
-        Assert.assertTrue(function.callbacks.isEmpty());
+        assertTrue(function.callbacks.isEmpty());
         debounce.run();
-        Assert.assertEquals(1, function.callbacks.size());
+        assertEquals(1, function.callbacks.size());
 
         CountDownLatch count = new CountDownLatch(1);
-        ActionListener listener = new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                count.countDown();
-            }
-
-        };
+        ActionListener listener = (e) -> count.countDown();
         function.addListener(listener);
-        for (int i = 0; i < 5; ++i) {
-            debounce.run();
-        }
-        Assert.assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
+        forLoop(5, debounce::run);
 
-        Assert.assertEquals(2, function.callbacks.size());
+        assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
+
+        assertEquals(2, function.callbacks.size());
         System.out.println(function.callbacks);
-        Assert.assertTrue(function.callbacks.get(1) - function.callbacks.get(0) >= 1000);
+        assertTrue(function.callbacks.get(1) - function.callbacks.get(0) >= 1000);
     }
 
     @Test
@@ -84,25 +90,17 @@ public class DebouncerTest {
         TestRunnable function = new TestRunnable();
         CountDownLatch count = new CountDownLatch(2);
         debounce = Debouncer.create(name, function, 1000);
-        Assert.assertTrue(function.callbacks.isEmpty());
+        assertTrue(function.callbacks.isEmpty());
 
-        ActionListener listener = new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                count.countDown();
-            }
-
-        };
+        ActionListener listener = e -> count.countDown();
         function.addListener(listener);
-        for (int i = 0; i < 100; ++i) {
-            debounce.run();
-        }
-        Assert.assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
+        forLoop(5, debounce::run);
 
-        Assert.assertEquals(2, function.callbacks.size());
+        assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
+
+        assertEquals(2, function.callbacks.size());
         System.out.println(function.callbacks);
-        Assert.assertTrue(function.callbacks.get(1) - function.callbacks.get(0) >= 1000);
+        assertTrue(function.callbacks.get(1) - function.callbacks.get(0) >= 1000);
     }
 
     private class TestRunnable implements ThrowingRunnable {

@@ -246,25 +246,25 @@ public class Debouncer {
         /**
          * The flag which denotes whether the function is alive or not.
          */
-        private volatile boolean isAlive = true;
+        private boolean isAlive = true;
         /**
          * Flag denoting that there is a schedule yet to be fired.
          */
-        private volatile boolean scheduleExists = false;
+        private boolean scheduleExists = false;
         /**
          * The last submitted state.
          */
-        private volatile State submission = new State(-1, 0);
+        private State submission = new State(-1, 0);
         /**
          * The last executed state.
          */
-        private volatile State execution = new State(-1, 0);
+        private State execution = new State(-1, 0);
         /**
          * The last scheduled idle check task. This will be cancelled and the timer
          * purged when a new idle check task is scheduled, and the new task will be set
          * to this reference.
          */
-        private volatile IdleTimeoutTask lastScheduledIdleCheck = null;
+        private IdleTimeoutTask lastScheduledIdleCheck = null;
 
         /**
          * Constructor.

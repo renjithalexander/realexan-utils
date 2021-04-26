@@ -97,6 +97,53 @@ public class Functional {
         return transformer.apply(input);
     }
 
+    /**
+     * Runs a for loop from start to end(excluded) supplying the value to the
+     * consumer.
+     * 
+     * @param start    the starting index.
+     * @param end      ending index.
+     * @param consumer the function which consumes the index.
+     */
+    public static void forLoop(int start, int end, Consumer<Integer> consumer) {
+        for (int i = start; i < end; ++i) {
+            consumer.accept(i);
+        }
+    }
+
+    /**
+     * Runs a for loop from 0 to end(excluded) supplying the value to the consumer.
+     * 
+     * @param end      ending index.
+     * @param consumer the function which consumes the index.
+     */
+    public static void forLoop(int end, Consumer<Integer> consumer) {
+        forLoop(0, end, consumer);
+    }
+
+    /**
+     * Runs a for loop from start to end(excluded) running the runnable.
+     * 
+     * @param start    the starting index.
+     * @param end      ending index.
+     * @param runnable the function which runs.
+     */
+    public static void forLoop(int start, int end, Runnable runnable) {
+        for (int i = start; i < end; ++i) {
+            runnable.run();
+        }
+    }
+
+    /**
+     * Runs a for loop from 0 to end(excluded) running the runnable.
+     * 
+     * @param end      ending index.
+     * @param runnable the function which runs.
+     */
+    public static void forLoop(int end, Runnable runnable) {
+        forLoop(0, end, runnable);
+    }
+
     public static void main(String... args) {
         List<String> strs = new ArrayList<>();
         for (int i = 1; i <= 100; ++i) {
@@ -109,5 +156,6 @@ public class Functional {
             arr[i - 1] = "" + i;
         }
         consume(arr, System.out::println);
+
     }
 }
