@@ -23,7 +23,7 @@ import com.realexan.functional.functions.ThrowingRunnable;
 
 /**
  * 
- * A debounce functionality, which prevents flooded execution of functions on
+ * A debounce functionality, which prevents flooded executions of functions on
  * flurry of triggers. It allows to have a cool off period between executions,
  * which gets extended with each trigger. It can be configured to force run at
  * specific intervals in case the triggers delay the execution for too long.
@@ -32,8 +32,8 @@ import com.realexan.functional.functions.ThrowingRunnable;
  * and then wait to cool off, or delay the execution until the cool off
  * period.<br>
  * It can also be configured to do the executions on a separate
- * SingleThreadedExecutor, so that the delay in executions won't add up to the
- * delays in scheduling.
+ * SingleThreadedExecutor, or an executor service provided, so that the delay in
+ * executions won't add up to the delays in scheduling.
  * 
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version
@@ -312,8 +312,9 @@ public class Debouncer {
         }
 
         private long getTimeElapsedSinceLastExecution() {
-            if (execution.eventTime == 0) {
-                return 0;
+            // Nothing executed yet. Initialize the execution with current time.
+            if (execution.id == -1 && execution.eventTime == 0) {
+                execution = new State(-1, now());
             }
             return now() - execution.eventTime;
         }
@@ -595,7 +596,7 @@ public class Debouncer {
 
     /**
      * The Debounce function. It allows controlled execution of the original
-     * function.
+     * function which was used to create the debounce function.
      * 
      * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
      * @version
@@ -619,7 +620,7 @@ public class Debouncer {
 
         /**
          * Runs the function as per the configurations used while creating this
-         * function. Throws IlegalStateException if the function has been cancelled.
+         * function. Throws IlegalStateException if the debounce has been cancelled.
          */
         void run();
 
