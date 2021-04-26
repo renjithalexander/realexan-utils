@@ -82,14 +82,14 @@ public class TryResult<T, U> {
         c.accept(this);
     }
 
-    public TryResult<T, U> onSuccess(Consumer<U> c) {
+    public TryResult<T, U> whenSucceeded(Consumer<U> c) {
         if (isSuccess()) {
             c.accept(output);
         }
         return this;
     }
 
-    public TryResult<T, U> onFailure(Consumer<Throwable> c) {
+    public TryResult<T, U> whenFailed(Consumer<Throwable> c) {
         if (!isSuccess()) {
             c.accept(error);
         }
