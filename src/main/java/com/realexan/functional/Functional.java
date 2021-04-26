@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.realexan.functional.functions.ThrowingRunnable;
 import com.realexan.functional.trial.Try;
 
 /**
@@ -34,6 +35,20 @@ import com.realexan.functional.trial.Try;
  *
  */
 public class Functional {
+
+    public static final Runnable NO_OP_RUNNABLE = () -> {
+    };
+
+    public static final ThrowingRunnable NO_OP_THROWING_RUNNABLE = () -> {
+    };
+
+    public static final Consumer<?> NO_OP_CONSUMER = (t) -> {
+    };
+
+    @SuppressWarnings("unchecked")
+    public static <T> Consumer<T> noOpConsumer() {
+        return (Consumer<T>) NO_OP_CONSUMER;
+    }
 
     /**
      * Try to parse the string to integer, and returns the result. If fails, returns

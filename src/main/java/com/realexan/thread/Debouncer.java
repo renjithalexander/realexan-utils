@@ -304,6 +304,7 @@ public class Debouncer {
         private void kill() {
             if (timer != null) {
                 timer.cancel();
+                timer = null;
             }
             if (executor != null) {
                 executor.shutdown();

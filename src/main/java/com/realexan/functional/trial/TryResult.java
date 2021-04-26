@@ -46,7 +46,7 @@ public class TryResult<T, U> {
     private TryResult(T input, U success, Throwable error) {
         this.input = input;
         this.output = success;
-        this.error = error;
+        this.error = error.getCause();
     }
 
     /**
@@ -75,23 +75,25 @@ public class TryResult<T, U> {
     }
 
     public boolean isSuccess() {
-        return output != null;
+        return error == null;
     }
 
     public void then(Consumer<TryResult<T, U>> c) {
         c.accept(this);
     }
 
-    public void thenOnSuccess(Consumer<U> c) {
+    public TryResult<T, U> onSuccess(Consumer<U> c) {
         if (isSuccess()) {
             c.accept(output);
         }
+        return this;
     }
 
-    public void thenOnFailure(Consumer<Throwable> c) {
+    public TryResult<T, U> onFailure(Consumer<Throwable> c) {
         if (!isSuccess()) {
             c.accept(error);
         }
+        return this;
     }
 
 }

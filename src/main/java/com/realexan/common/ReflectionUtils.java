@@ -38,12 +38,16 @@ public class ReflectionUtils {
      * @return the TryResult containing the field value.
      */
     public static TryResult<Void, Object> getField(String fieldName, Object obj) {
-        return Try.doTry(null, (t) -> {
-            Class<?> clazz = obj.getClass();
-            Field f = clazz.getDeclaredField(fieldName);
-            f.setAccessible(true);
-            return f.get(obj);
-        });
+        return Try.doTry(null, (t) -> ReflectionUtils.getFieldRaw(fieldName, obj));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldRaw(String fieldName, Object obj)
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        Class<?> clazz = obj.getClass();
+        Field f = clazz.getDeclaredField(fieldName);
+        f.setAccessible(true);
+        return (T) f.get(obj);
     }
 
 }

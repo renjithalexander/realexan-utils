@@ -1,9 +1,13 @@
 package com.realexan.thread.utils;
 
 import static com.realexan.functional.Functional.forLoop;
+import static com.realexan.functional.Functional.*;
+import static com.realexan.common.ReflectionUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Assert;
 
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -16,6 +20,7 @@ import org.junit.Test;
 
 import com.realexan.common.ThreadUtils;
 import com.realexan.functional.functions.ThrowingRunnable;
+import com.realexan.functional.trial.Try;
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
 
@@ -56,12 +61,17 @@ public class DebouncerTest {
 
     @Test
     public void testCreateAndCancel() throws Exception {
-        debounce = Debouncer.create(name, () -> {
-        }, 1000);
+        debounce = Debouncer.create(name, NO_OP_THROWING_RUNNABLE, 1000);
         assertNotNull(debounce);
-        for (int i = 0; i < 100; ++i) {
-            debounce.run();
-        }
+        
+        Try.doTry("timer", (field) -> getFieldRaw(field, debounce)).onSuccess(Assert::assertNull).onFailure(t -> fail());
+
+        Try.doTry(() -> forLoop(100, debounce::run)).onSuccess(v -> noOpConsumer()).onFailure(t -> fail());
+        // Fix the test.
+        //Try.doTry("timer", (t) -> getFieldRaw(t, debounce)).onSuccess(Assert::assertNotNull);
+        debounce.cancel();
+        // Once cancelled, it must not succeed
+        Try.doTry(debounce::run).onSuccess(v -> fail()).onFailure(e -> assertTrue(e instanceof IllegalStateException));
 
     }
 

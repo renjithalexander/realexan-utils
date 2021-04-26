@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import com.realexan.functional.functions.ThrowingFunction;
+import com.realexan.functional.functions.ThrowingRunnable;
 
 /**
  * 
@@ -131,6 +132,14 @@ public class Try<T, U> {
         return doTry(input, getTry(function));
     }
 
+    public static TryResult<Void, Void> doTry(ThrowingRunnable runnable) {
+        ThrowingFunction<Void, Void> function = (t) -> {
+            runnable.execute();
+            return null;
+        };
+        return doTry(null, function);
+    }
+
     public TryResult<T, U> tryIt(T input, U defaultVal) {
         TryResult<T, U> result = this.function.apply(input);
         if (!result.isSuccess()) {
@@ -157,7 +166,6 @@ public class Try<T, U> {
         TryResult<T, U> result = Try.doTry(input, function);
         return result.isSuccess() ? result.getOutput() : defaultVal;
     }
-
 
     @FunctionalInterface
     public interface TestFunction<T> extends ThrowingFunction<T, Void> {
