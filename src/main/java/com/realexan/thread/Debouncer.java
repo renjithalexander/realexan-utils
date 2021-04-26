@@ -565,7 +565,7 @@ public class Debouncer {
          *          </tr>
          *          </table>
          */
-        private class State {
+        private static class State {
 
             final long id;
             final long eventTime;
