@@ -3,9 +3,9 @@
  */
 package com.realexan.thread;
 
+import static com.realexan.common.ThreadUtils.now;
 import static com.realexan.common.ThreadUtils.runWithLock;
 import static com.realexan.common.ThreadUtils.toExceptionSuppressedRunnable;
-import static com.realexan.common.ThreadUtils.now;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -13,7 +13,9 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -135,9 +137,12 @@ public class Debouncer {
      */
     public static Debounce create(String name, ThrowingRunnable function, long coolOffTime, long forcedRunInterval,
             boolean immediate, boolean runNonBlocked, long idleThreadTimeout) {
-        ExecutorService executor = runNonBlocked
-                ? Executors.newSingleThreadExecutor(new NamedThreadFactory("Debounce-" + name + "-Threadpool"))
-                : null;
+        ThreadPoolExecutor executor = null;
+        if (runNonBlocked) {
+            executor = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+                    new NamedThreadFactory("Debounce-" + name + "-Threadpool"));
+            executor.allowCoreThreadTimeOut(true);
+        }
         return create(name, function, coolOffTime, forcedRunInterval, immediate, executor, idleThreadTimeout);
     }
 
@@ -590,7 +595,8 @@ public class Debouncer {
     }
 
     /**
-     * The Debounce function interface.
+     * The Debounce function. It allows controlled execution of the original
+     * function.
      * 
      * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
      * @version
