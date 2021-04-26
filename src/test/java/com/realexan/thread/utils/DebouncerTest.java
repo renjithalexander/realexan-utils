@@ -64,14 +64,14 @@ public class DebouncerTest {
         debounce = Debouncer.create(name, NO_OP_THROWING_RUNNABLE, 1000);
         assertNotNull(debounce);
         
-        Try.doTry("timer", (field) -> getFieldRaw(field, debounce)).ifSuccess(Assert::assertNull).ifFailed(t -> fail());
+        Try.doTry("timer", (field) -> getFieldRaw(field, debounce)).ifSucceeded(Assert::assertNull).ifFailed(t -> fail());
 
-        Try.doTry(() -> forLoop(100, debounce::run)).ifSuccess(v -> noOpConsumer()).ifFailed(t -> fail());
+        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(v -> noOpConsumer()).ifFailed(t -> fail());
         // Fix the test.
         //Try.doTry("timer", (t) -> getFieldRaw(t, debounce)).onSuccess(Assert::assertNotNull);
         debounce.cancel();
         // Once cancelled, it must not succeed
-        Try.doTry(debounce::run).ifSuccess(v -> fail()).ifFailed(e -> assertTrue(e instanceof IllegalStateException));
+        Try.doTry(debounce::run).ifSucceeded(v -> fail()).ifFailed(e -> assertTrue(e instanceof IllegalStateException));
 
     }
 

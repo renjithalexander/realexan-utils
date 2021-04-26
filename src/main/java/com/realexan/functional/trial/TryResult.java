@@ -82,7 +82,7 @@ public class TryResult<T, U> {
         c.accept(this);
     }
 
-    public TryResult<T, U> ifSuccess(Consumer<U> c) {
+    public TryResult<T, U> ifSucceeded(Consumer<U> c) {
         if (isSuccess()) {
             c.accept(output);
         }
