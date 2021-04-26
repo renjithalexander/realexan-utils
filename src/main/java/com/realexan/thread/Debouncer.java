@@ -402,15 +402,14 @@ public class Debouncer {
                 boolean mustRun = forceRun();
                 // Find the delay until next run
                 long nextRun = coolOffTime - (now() - submission.eventTime);
-                // If next run is long pending, run and be done.
-                if (nextRun <= 0) {
+                // Run has to be done.
+                if (nextRun <= 0 || mustRun) {
                     execute(submission.id);
+                }
+                // long pending next run, which is already run(above). Now be done.
+                if (nextRun <= 0) {
                     scheduleIdleCheck();
                     return;
-                }
-                // If the delay has exceeded the maximum delay interval...
-                if (mustRun) {
-                    execute(submission.id);
                 }
                 // Schedule for next run.
                 schedule(new DebounceTask(submission.id), nextRun);
