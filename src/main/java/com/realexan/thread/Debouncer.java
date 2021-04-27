@@ -296,6 +296,10 @@ public class Debouncer {
             this.immediate = immediate;
             this.executor = executor;
             this.idleTimeout = idleTimeout;
+            // Needs some initial value to last executed.
+            if (!immediate) {
+                execution = new State(-1, now());
+            }
         }
 
         /**
@@ -313,10 +317,7 @@ public class Debouncer {
         }
 
         private long getTimeElapsedSinceLastExecution() {
-            // Nothing executed yet. Initialize the execution with current time.
-            if (execution.id == -1 && execution.eventTime == 0) {
-                execution = new State(-1, now());
-            }
+            
             return now() - execution.eventTime;
         }
 
