@@ -103,7 +103,7 @@ public class FunctionalUtils {
      * @param transformer the transformer.
      * @return the transformed output.
      */
-    public static <T, R> R transform(T input, Function<T, R> transformer) {
+    public static <T, R> R map(T input, Function<T, R> transformer) {
         return transformer.apply(input);
     }
 
