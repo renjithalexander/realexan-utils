@@ -1,4 +1,4 @@
-package com.realexan.functional.functions;
+package com.realexan.util.function;
 
 /**
  * 
@@ -32,4 +32,5 @@ public interface ThrowingRunnable {
      * @throws Throwable
      */
     void execute() throws Throwable;
+    
 }

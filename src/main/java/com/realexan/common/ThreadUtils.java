@@ -4,7 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.locks.Lock;
 
-import com.realexan.functional.functions.ThrowingRunnable;
+import com.realexan.util.function.ThrowingRunnable;
 
 /**
  * 

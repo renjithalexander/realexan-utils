@@ -23,9 +23,9 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.DefaultCaret;
 
-import com.realexan.functional.functions.ThrowingRunnable;
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
+import com.realexan.util.function.ThrowingRunnable;
 
 /**
  * Tests the Debounce functionality through a simple UI.

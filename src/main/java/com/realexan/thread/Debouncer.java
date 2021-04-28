@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.realexan.functional.functions.ThrowingRunnable;
+import com.realexan.util.function.ThrowingRunnable;
 
 /**
  * 

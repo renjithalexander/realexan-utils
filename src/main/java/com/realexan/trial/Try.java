@@ -1,14 +1,14 @@
 /**
  * 
  */
-package com.realexan.functional.trial;
+package com.realexan.trial;
 
 import java.net.URI;
 import java.util.Objects;
 import java.util.function.Function;
 
-import com.realexan.functional.functions.ThrowingFunction;
-import com.realexan.functional.functions.ThrowingRunnable;
+import com.realexan.util.function.ThrowingFunction;
+import com.realexan.util.function.ThrowingRunnable;
 
 /**
  * 
@@ -117,27 +117,7 @@ public class Try<T, U> {
 
     public TryResult<T, U> tryIt(T input) {
         return this.function.apply(input);
-    }
 
-    public static <T, U> Try<T, U> getTry(ThrowingFunction<T, U> function) {
-        return new Try<>(function);
-    }
-
-    public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial) {
-        Objects.requireNonNull(trial);
-        return trial.tryIt(input);
-    }
-
-    public static <T, U> TryResult<T, U> doTry(T input, ThrowingFunction<T, U> function) {
-        return doTry(input, getTry(function));
-    }
-
-    public static TryResult<Void, Void> doTry(ThrowingRunnable runnable) {
-        ThrowingFunction<Void, Void> function = (t) -> {
-            runnable.execute();
-            return null;
-        };
-        return doTry(null, function);
     }
 
     public TryResult<T, U> tryIt(T input, U defaultVal) {
@@ -148,6 +128,29 @@ public class Try<T, U> {
         return result;
     }
 
+    public static <T, U> Try<T, U> getTry(ThrowingFunction<T, U> function) {
+        return new Try<>(function);
+    }
+
+    public static <T, U> TryResult<T, U> doTry(T input, ThrowingFunction<T, U> function) {
+        try {
+            return new TryResult<>(input, function.apply(input));
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return new TryResult<>(input, e);
+        }
+    }
+
+    public static TryRunnableResult doTry(ThrowingRunnable runnable) {
+        try {
+            runnable.execute();
+            return new TryRunnableResult(null);
+        } catch (Throwable t) {
+            return new TryRunnableResult(t);
+        }
+
+    }
+
     public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial, U defaultVal) {
         Objects.requireNonNull(trial);
         return trial.tryIt(input, defaultVal);
@@ -155,11 +158,6 @@ public class Try<T, U> {
 
     public static <T, U> TryResult<T, U> doTry(T input, ThrowingFunction<T, U> function, U defaultVal) {
         return doTry(input, getTry(function), defaultVal);
-    }
-
-    public static <T, U> U getResult(T input, Try<T, U> transformer, U defaultVal) {
-        TryResult<T, U> result = Try.doTry(input, transformer);
-        return result.isSuccess() ? result.getOutput() : defaultVal;
     }
 
     public static <T, U> U getResult(T input, ThrowingFunction<T, U> function, U defaultVal) {

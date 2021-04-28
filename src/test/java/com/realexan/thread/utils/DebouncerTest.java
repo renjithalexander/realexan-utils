@@ -1,14 +1,12 @@
 package com.realexan.thread.utils;
 
-import static com.realexan.common.ReflectionUtils.getFieldRaw;
-import static com.realexan.functional.Functional.NO_OP_THROWING_RUNNABLE;
-import static com.realexan.functional.Functional.forLoop;
-import static com.realexan.functional.Functional.noOpConsumer;
+import static com.realexan.common.FunctionalUtils.NO_OP_THROWING_RUNNABLE;
+import static com.realexan.common.FunctionalUtils.forLoop;
+import static com.realexan.common.ReflectionUtils.getField;
 import static com.realexan.junit.utils.JUConsumer.assertFail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -21,10 +19,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.realexan.common.ThreadUtils;
-import com.realexan.functional.functions.ThrowingRunnable;
-import com.realexan.functional.trial.Try;
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
+import com.realexan.trial.Try;
+import com.realexan.util.function.ThrowingRunnable;
 
 /**
  * Test for Debouncer.
@@ -65,20 +63,25 @@ public class DebouncerTest {
     public void testCreateAndCancel() throws Exception {
         debounce = Debouncer.create(name, NO_OP_THROWING_RUNNABLE, 1000);
         assertNotNull(debounce);
-        // ThrowingBiFunction<String, Object, Object> getFieldRaw = (field, object) ->
-        // ReflectionUtils.getFieldRaw(field, object);
 
-        Try.doTry("timer", (field) -> getFieldRaw(field, debounce)).ifSucceeded(Assert::assertNull)
-                .ifFailed(assertFail());
+        // Timer sill be lazy initialized.
+        getField(debounce, "timer").ifSucceeded(Assert::assertNull).ifFailed(assertFail());
 
-        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(noOpConsumer()).ifFailed(assertFail());
-        // Fix the test.
-        // Try.doTry("timer", (t) -> getFieldRaw(t,
-        // debounce)).onSuccess(Assert::assertNotNull);
+        // Try triggering it for a hundred times.
+        Try.doTry(() -> forLoop(100, debounce::run)).ifFailed(assertFail());
+
+        Object timer = getField(debounce, "timer").ifSucceeded(Assert::assertNotNull).ifFailed(assertFail())
+                .getOutput();
+
+        int queueSize = getField(getField(timer, "queue").getOutput(), "size").value();
+        // The queue size must not go over 2. That too, a maximum of one DebouceTask,
+        // and a maximum of one TimeoutTask.
+        assertTrue(queueSize <= 2);
+
         debounce.cancel();
         // Once cancelled, it must not succeed
-        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(v -> fail())
-                .ifFailed(e -> assertTrue(e instanceof IllegalStateException));
+        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(assertFail())
+                .ifFailed(e -> assertTrue(e.getCause() instanceof IllegalStateException));
 
     }
 

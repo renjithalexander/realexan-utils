@@ -1,15 +1,14 @@
 /**
  * 
  */
-package com.realexan.functional;
+package com.realexan.common;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.realexan.functional.functions.ThrowingRunnable;
-import com.realexan.functional.trial.Try;
+import com.realexan.util.function.ThrowingRunnable;
 
 /**
  * 
@@ -34,7 +33,7 @@ import com.realexan.functional.trial.Try;
  *          </table>
  *
  */
-public class Functional {
+public class FunctionalUtils {
 
     public static final Runnable NO_OP_RUNNABLE = () -> {
     };
@@ -44,33 +43,16 @@ public class Functional {
 
     public static final Consumer<?> NO_OP_CONSUMER = (t) -> {
     };
+    
+    
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Object t) {
+        return (T)t;
+    }
 
     @SuppressWarnings("unchecked")
     public static <T> Consumer<T> noOpConsumer() {
         return (Consumer<T>) NO_OP_CONSUMER;
-    }
-
-    /**
-     * Try to parse the string to integer, and returns the result. If fails, returns
-     * -1;
-     * 
-     * @param s the String passed.
-     * @return the parsed value or -1 if parsing failed.
-     */
-    public static int tryParse(String s) {
-        return tryParse(s, -1);
-    }
-
-    /**
-     * Try to parse the string to integer, and returns the result. If fails, returns
-     * default value;
-     * 
-     * @param s          the String passed.
-     * @param defaultVal the default value
-     * @return the parsed value or default value if parsing failed.
-     */
-    public static int tryParse(String s, int defaultVal) {
-        return Try.getResult(s, Integer::parseInt, defaultVal);
     }
 
     /**

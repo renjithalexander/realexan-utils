@@ -1,12 +1,7 @@
-package com.realexan.junit.utils;
-
-import static com.realexan.common.FunctionalUtils.r2C;
-
-import java.util.function.Consumer;
-
-import org.junit.Assert;
+package com.realexan.trial;
 
 /**
+ * The result of running a ThrowingRunnable.
  * 
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version
@@ -18,7 +13,7 @@ import org.junit.Assert;
  *          <td width="*"><b>Description</b></td>
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
- *          <td>27-Apr-2021</td>
+ *          <td>28-Apr-2021</td>
  *          <td><a href=
  *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
  *          <td align="right">1</td>
@@ -26,13 +21,17 @@ import org.junit.Assert;
  *          </tr>
  *          </table>
  */
-public class JUConsumer {
+public class TryRunnableResult extends TryResult<Void, Void> {
+    
+    //public static final TryRunnableResult SUCCESS = new TryRunnableResult(null);
 
-    public static Consumer<?> assertFail = r2C(Assert::fail);
-
-    @SuppressWarnings("unchecked")
-    public static <T> Consumer<T> assertFail() {
-        return (Consumer<T>) assertFail;
+    /**
+     * Constructor.
+     * 
+     * @param t the error, if any, which occred while running the ThrowingRunnable.
+     */
+    public TryRunnableResult(Throwable t) {
+        super(null, t);
     }
 
 }

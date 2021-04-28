@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.realexan.functional.trial;
+package com.realexan.trial;
 
 import java.util.function.Consumer;
 
@@ -43,10 +43,10 @@ public class TryResult<T, U> {
         this(input, null, error);
     }
 
-    private TryResult(T input, U success, Throwable error) {
+    protected TryResult(T input, U success, Throwable error) {
         this.input = input;
         this.output = success;
-        this.error = error.getCause();
+        this.error = error;
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.realexan.functional.functions;
+package com.realexan.util.function;
 
 import java.util.Objects;
 import java.util.function.Function;
