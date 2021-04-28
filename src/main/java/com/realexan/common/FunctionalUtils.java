@@ -64,7 +64,7 @@ public class FunctionalUtils {
      * @return an object sink for the type passed.
      */
     @SuppressWarnings("unchecked")
-    public static <T> Consumer<T> noOpConsumer() {
+    public static <T> Consumer<T> sink() {
         return (Consumer<T>) NO_OP_CONSUMER;
     }
 
