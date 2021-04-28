@@ -159,6 +159,12 @@ public class Functional {
         forLoop(0, end, runnable);
     }
 
+    public static <T> Consumer<T> r2C(Runnable r) {
+        return (c) -> {
+            r.run();
+        };
+    }
+
     public static void main(String... args) {
         List<String> strs = new ArrayList<>();
         for (int i = 1; i <= 100; ++i) {

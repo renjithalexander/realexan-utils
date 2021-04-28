@@ -43,9 +43,10 @@ public class ReflectionUtils {
 
     /**
      * Returns the value of the field for the object passed.
-     * @param <T> the type of the value.
+     * 
+     * @param <T>       the type of the value.
      * @param fieldName the field name.
-     * @param obj the object from which the field value is to be extracted.
+     * @param obj       the object from which the field value is to be extracted.
      * @return the value of the object.
      * @throws NoSuchFieldException
      * @throws SecurityException

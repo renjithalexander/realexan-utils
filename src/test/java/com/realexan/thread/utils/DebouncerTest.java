@@ -1,13 +1,14 @@
 package com.realexan.thread.utils;
 
+import static com.realexan.common.ReflectionUtils.getFieldRaw;
+import static com.realexan.functional.Functional.NO_OP_THROWING_RUNNABLE;
 import static com.realexan.functional.Functional.forLoop;
-import static com.realexan.functional.Functional.*;
-import static com.realexan.common.ReflectionUtils.*;
+import static com.realexan.functional.Functional.noOpConsumer;
+import static com.realexan.junit.utils.JUConsumer.assertFail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.Assert;
 
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.realexan.common.ThreadUtils;
@@ -63,15 +65,20 @@ public class DebouncerTest {
     public void testCreateAndCancel() throws Exception {
         debounce = Debouncer.create(name, NO_OP_THROWING_RUNNABLE, 1000);
         assertNotNull(debounce);
-        
-        Try.doTry("timer", (field) -> getFieldRaw(field, debounce)).ifSucceeded(Assert::assertNull).ifFailed(t -> fail());
+        // ThrowingBiFunction<String, Object, Object> getFieldRaw = (field, object) ->
+        // ReflectionUtils.getFieldRaw(field, object);
 
-        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(v -> noOpConsumer()).ifFailed(t -> fail());
+        Try.doTry("timer", (field) -> getFieldRaw(field, debounce)).ifSucceeded(Assert::assertNull)
+                .ifFailed(assertFail());
+
+        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(noOpConsumer()).ifFailed(assertFail());
         // Fix the test.
-        //Try.doTry("timer", (t) -> getFieldRaw(t, debounce)).onSuccess(Assert::assertNotNull);
+        // Try.doTry("timer", (t) -> getFieldRaw(t,
+        // debounce)).onSuccess(Assert::assertNotNull);
         debounce.cancel();
         // Once cancelled, it must not succeed
-        Try.doTry(debounce::run).ifSucceeded(v -> fail()).ifFailed(e -> assertTrue(e instanceof IllegalStateException));
+        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(v -> fail())
+                .ifFailed(e -> assertTrue(e instanceof IllegalStateException));
 
     }
 

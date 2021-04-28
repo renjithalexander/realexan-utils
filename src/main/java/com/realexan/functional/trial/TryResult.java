@@ -96,4 +96,18 @@ public class TryResult<T, U> {
         return this;
     }
 
+    public TryResult<T, U> ifSucceededRun(Runnable r) {
+        if (isSuccess()) {
+            r.run();
+        }
+        return this;
+    }
+
+    public TryResult<T, U> ifFailedRun(Runnable r) {
+        if (!isSuccess()) {
+            r.run();
+        }
+        return this;
+    }
+
 }

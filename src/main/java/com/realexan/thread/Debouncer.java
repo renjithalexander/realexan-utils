@@ -317,7 +317,7 @@ public class Debouncer {
         }
 
         private long getTimeElapsedSinceLastExecution() {
-            
+
             return now() - execution.eventTime;
         }
 
