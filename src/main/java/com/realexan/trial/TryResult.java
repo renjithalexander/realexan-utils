@@ -6,7 +6,7 @@ package com.realexan.trial;
 import java.util.function.Consumer;
 
 /**
- * 
+ * The result of executing a Try function.
  * 
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version

@@ -2,6 +2,7 @@ package com.realexan.thread.utils;
 
 import static com.realexan.common.FunctionalUtils.NO_OP_THROWING_RUNNABLE;
 import static com.realexan.common.FunctionalUtils.forLoop;
+import static com.realexan.common.FunctionalUtils.forEach;
 import static com.realexan.common.ReflectionUtils.getField;
 import static com.realexan.junit.utils.JUConsumer.assertFail;
 import static org.junit.Assert.assertEquals;
@@ -133,9 +134,7 @@ public class DebouncerTest {
         public void execute() throws Throwable {
             System.out.println(ThreadUtils.now());
             callbacks.add(ThreadUtils.now());
-            for (ActionListener l : listeners) {
-                l.actionPerformed(null);
-            }
+            forEach(listeners, l -> l.actionPerformed(null));
         }
 
         public void addListener(ActionListener listener) {

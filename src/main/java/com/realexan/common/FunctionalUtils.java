@@ -43,13 +43,26 @@ public class FunctionalUtils {
 
     public static final Consumer<?> NO_OP_CONSUMER = (t) -> {
     };
-    
-    
+
+    /**
+     * Type casts the input to output. Could cause ClassCastException if not used
+     * with diligence.
+     * 
+     * @param <T> type to which the cast has to be done.
+     * @param t   the input.
+     * @return the input casted to the output type.
+     */
     @SuppressWarnings("unchecked")
     public static <T> T cast(Object t) {
-        return (T)t;
+        return (T) t;
     }
 
+    /**
+     * Returns an object sink.
+     * 
+     * @param <T> type of the consumed object.
+     * @return an object sink for the type passed.
+     */
     @SuppressWarnings("unchecked")
     public static <T> Consumer<T> noOpConsumer() {
         return (Consumer<T>) NO_OP_CONSUMER;
@@ -62,7 +75,7 @@ public class FunctionalUtils {
      * @param ite      the iterable.
      * @param consumer the consumer.
      */
-    public static <T> void consume(Iterable<T> ite, Consumer<T> consumer) {
+    public static <T> void forEach(Iterable<T> ite, Consumer<T> consumer) {
         for (T t : ite) {
             consumer.accept(t);
         }
@@ -75,7 +88,7 @@ public class FunctionalUtils {
      * @param arr      the array.
      * @param consumer the consumer.
      */
-    public static <T> void consume(T[] arr, Consumer<T> consumer) {
+    public static <T> void forEach(T[] arr, Consumer<T> consumer) {
         for (T t : arr) {
             consumer.accept(t);
         }
@@ -152,13 +165,13 @@ public class FunctionalUtils {
         for (int i = 1; i <= 100; ++i) {
             strs.add("" + i);
         }
-        consume(strs, System.out::println);
+        forEach(strs, System.out::println);
 
         String[] arr = new String[100];
         for (int i = 1; i <= 100; ++i) {
             arr[i - 1] = "" + i;
         }
-        consume(arr, System.out::println);
+        forEach(arr, System.out::println);
 
     }
 }

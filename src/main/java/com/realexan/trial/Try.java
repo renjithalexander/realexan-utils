@@ -11,7 +11,7 @@ import com.realexan.util.function.ThrowingFunction;
 import com.realexan.util.function.ThrowingRunnable;
 
 /**
- * 
+ * Mimicking Try-Catch.
  * 
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version
