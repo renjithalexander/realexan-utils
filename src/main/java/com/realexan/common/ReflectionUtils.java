@@ -41,6 +41,17 @@ public class ReflectionUtils {
         return Try.doTry(null, (t) -> ReflectionUtils.getFieldRaw(fieldName, obj));
     }
 
+    /**
+     * Returns the value of the field for the object passed.
+     * @param <T> the type of the value.
+     * @param fieldName the field name.
+     * @param obj the object from which the field value is to be extracted.
+     * @return the value of the object.
+     * @throws NoSuchFieldException
+     * @throws SecurityException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     */
     @SuppressWarnings("unchecked")
     public static <T> T getFieldRaw(String fieldName, Object obj)
             throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
