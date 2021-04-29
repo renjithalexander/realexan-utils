@@ -78,10 +78,6 @@ public class TryResult<T, U> {
         return error == null;
     }
 
-    public void then(Consumer<TryResult<T, U>> c) {
-        c.accept(this);
-    }
-
     public TryResult<T, U> ifSucceeded(Consumer<U> c) {
         if (isSuccess()) {
             c.accept(output);
@@ -96,14 +92,14 @@ public class TryResult<T, U> {
         return this;
     }
 
-    public TryResult<T, U> ifSucceededRun(Runnable r) {
+    public TryResult<T, U> ifSucceeded(Runnable r) {
         if (isSuccess()) {
             r.run();
         }
         return this;
     }
 
-    public TryResult<T, U> ifFailedRun(Runnable r) {
+    public TryResult<T, U> ifFailed(Runnable r) {
         if (!isSuccess()) {
             r.run();
         }

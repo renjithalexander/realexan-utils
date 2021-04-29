@@ -1,12 +1,7 @@
-package com.realexan.junit.utils;
-
-import static com.realexan.common.FunctionalUtils.r2C;
-
-import java.util.function.Consumer;
-
-import org.junit.Assert;
+package com.realexan.util.function;
 
 /**
+ * A supplier which throws a throwable.
  * 
  * @author <a href="mailto:renjithalexander@gmail.com">Renjith Alexander</a>
  * @version
@@ -18,7 +13,7 @@ import org.junit.Assert;
  *          <td width="*"><b>Description</b></td>
  *          </tr>
  *          <tr bgcolor="white" id="TableRowColor">
- *          <td>27-Apr-2021</td>
+ *          <td>29-Apr-2021</td>
  *          <td><a href=
  *          "mailto:renjithalexander@gmail.com">renjithalexander@gmail.com</a></td>
  *          <td align="right">1</td>
@@ -26,13 +21,13 @@ import org.junit.Assert;
  *          </tr>
  *          </table>
  */
-public class JUConsumer {
-
-    public static Consumer<?> assertFail = r2C(Assert::fail);
-
-    @SuppressWarnings("unchecked")
-    public static <T> Consumer<T> failTest() {
-        return (Consumer<T>) assertFail;
-    }
+public interface ThrowingSupplier<T> {
+    /**
+     * Supplies the object.
+     * 
+     * @return the object.
+     * @throws Throwable if there is an error while supplying the object.
+     */
+    T get() throws Throwable;
 
 }

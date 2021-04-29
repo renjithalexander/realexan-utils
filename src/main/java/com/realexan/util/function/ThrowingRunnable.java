@@ -32,5 +32,5 @@ public interface ThrowingRunnable {
      * @throws Throwable
      */
     void execute() throws Throwable;
-    
+
 }

@@ -22,8 +22,8 @@ package com.realexan.trial;
  *          </table>
  */
 public class TryRunnableResult extends TryResult<Void, Void> {
-    
-    //public static final TryRunnableResult SUCCESS = new TryRunnableResult(null);
+
+    // public static final TryRunnableResult SUCCESS = new TryRunnableResult(null);
 
     /**
      * Constructor.

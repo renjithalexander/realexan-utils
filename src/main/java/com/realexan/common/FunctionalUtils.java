@@ -58,7 +58,7 @@ public class FunctionalUtils {
     }
 
     /**
-     * Returns an object sink.
+     * Returns an object default sink.
      * 
      * @param <T> type of the consumed object.
      * @return an object sink for the type passed.
@@ -66,6 +66,26 @@ public class FunctionalUtils {
     @SuppressWarnings("unchecked")
     public static <T> Consumer<T> sink() {
         return (Consumer<T>) NO_OP_CONSUMER;
+    }
+
+    /**
+     * Returns an object source from the factory provided.
+     * 
+     * @param <T> type of the generated object.
+     * @return null.
+     */
+    public static <T> T source(ObjectFactory<T> factory) {
+        return factory.source();
+    }
+
+    /**
+     * Returns an object source from the factory provided.
+     * 
+     * @param <T> type of the generated object.
+     * @return null.
+     */
+    public static <T> T source() {
+        return null;
     }
 
     /**
@@ -173,5 +193,10 @@ public class FunctionalUtils {
         }
         forEach(arr, System.out::println);
 
+    }
+
+    public static interface ObjectFactory<T> {
+
+        T source();
     }
 }

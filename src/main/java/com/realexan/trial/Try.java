@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import com.realexan.util.function.ThrowingFunction;
 import com.realexan.util.function.ThrowingRunnable;
+import com.realexan.util.function.ThrowingSupplier;
 
 /**
  * Mimicking Try-Catch.
@@ -149,6 +150,14 @@ public class Try<T, U> {
             return new TryRunnableResult(t);
         }
 
+    }
+
+    public static <U> TryResult<Void, U> doTry(ThrowingSupplier<U> supplier) {
+        try {
+            return new TryResult<Void, U>(null, supplier.get());
+        } catch (Throwable t) {
+            return new TryResult<Void, U>(null, null, t);
+        }
     }
 
     public static <T, U> TryResult<T, U> doTry(T input, Try<T, U> trial, U defaultVal) {

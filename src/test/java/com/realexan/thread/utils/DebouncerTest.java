@@ -1,10 +1,10 @@
 package com.realexan.thread.utils;
 
 import static com.realexan.common.FunctionalUtils.NO_OP_THROWING_RUNNABLE;
-import static com.realexan.common.FunctionalUtils.forLoop;
 import static com.realexan.common.FunctionalUtils.forEach;
+import static com.realexan.common.FunctionalUtils.forLoop;
 import static com.realexan.common.ReflectionUtils.getField;
-import static com.realexan.junit.utils.JUConsumer.assertFail;
+import static com.realexan.junit.utils.JUConsumer.failTest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +23,7 @@ import com.realexan.common.ThreadUtils;
 import com.realexan.thread.Debouncer;
 import com.realexan.thread.Debouncer.Debounce;
 import com.realexan.trial.Try;
+import com.realexan.trial.TryResult;
 import com.realexan.util.function.ThrowingRunnable;
 
 /**
@@ -66,22 +67,24 @@ public class DebouncerTest {
         assertNotNull(debounce);
 
         // Timer sill be lazy initialized.
-        getField(debounce, "timer").ifSucceeded(Assert::assertNull).ifFailed(assertFail());
+        TryResult<String, Object> res = Try.doTry("timer", t -> getField(debounce, t));
+        res.ifSucceeded(Assert::assertNull).ifFailed(failTest());
 
         // Try triggering it for a hundred times.
-        Try.doTry(() -> forLoop(100, debounce::run)).ifFailed(assertFail());
+        Try.doTry(() -> forLoop(100, debounce::run)).ifFailed(failTest());
 
-        Object timer = getField(debounce, "timer").ifSucceeded(Assert::assertNotNull).ifFailed(assertFail())
-                .getOutput();
+        // Now the timer is initialized
+        Object timer = Try.doTry(() -> getField(debounce, "timer")).ifSucceeded(Assert::assertNotNull)
+                .ifFailed(failTest()).getOutput();
 
-        int queueSize = getField(getField(timer, "queue").getOutput(), "size").value();
+        int queueSize = getField(getField(timer, "queue"), "size");
         // The queue size must not go over 2. That too, a maximum of one DebouceTask,
         // and a maximum of one TimeoutTask.
         assertTrue(queueSize <= 2);
 
         debounce.cancel();
         // Once cancelled, it must not succeed
-        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(assertFail())
+        Try.doTry(() -> forLoop(100, debounce::run)).ifSucceeded(failTest())
                 .ifFailed(e -> assertTrue(e.getCause() instanceof IllegalStateException));
 
     }
