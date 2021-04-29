@@ -4,6 +4,7 @@ import static com.realexan.common.FunctionalUtils.NO_OP_THROWING_RUNNABLE;
 import static com.realexan.common.FunctionalUtils.forEach;
 import static com.realexan.common.FunctionalUtils.forLoop;
 import static com.realexan.common.ReflectionUtils.getField;
+import static com.realexan.common.ThreadUtils.sleep;
 import static com.realexan.junit.utils.JUtils.failTest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -61,6 +62,11 @@ public class DebouncerTest {
 
     }
 
+    /**
+     * Tests creation and cancellation of the debounce function.
+     * 
+     * @throws Exception
+     */
     @Test
     public void testCreateAndCancel() throws Exception {
         debounce = Debouncer.create(name, NO_OP_THROWING_RUNNABLE, 1000);
@@ -89,6 +95,11 @@ public class DebouncerTest {
 
     }
 
+    /**
+     * Tests debounce with immediate firing and a cool off period of 1000ms
+     * 
+     * @throws Exception
+     */
     @Test
     public void testDebouncerExecutionsImmediate() throws Exception {
         TestRunnable function = new TestRunnable();
@@ -102,7 +113,7 @@ public class DebouncerTest {
 
         Thread.sleep(2000);
         // No more function calls for just one trigger
-        assertEquals(0, function.callbacks.size());
+        assertEquals(1, function.callbacks.size());
 
         CountDownLatch count = new CountDownLatch(2);
         ActionListener listener = (e) -> count.countDown();
@@ -120,6 +131,11 @@ public class DebouncerTest {
         assertEquals("Debounce-junit", function.callBackThreads.get(2).getName());
     }
 
+    /**
+     * Tests debounce with delayed firing and a cool off period of 1000ms
+     * 
+     * @throws Exception
+     */
     @Test
     public void testDebouncerExecutionsDelayed() throws Exception {
         TestRunnable function = new TestRunnable();
@@ -144,6 +160,61 @@ public class DebouncerTest {
         assertEquals(1, function.callbacks.size());
         // That function call must be made from the Debounce thread.
         assertEquals("Debounce-junit", function.callBackThreads.get(0).getName());
+    }
+
+    /**
+     * Tests debounce with delayed firing and a cool off period of 500ms and forced
+     * run interval of 1000ms
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testDebouncerExecutionsWithForcedRun() throws Exception {
+        TestRunnable function = new TestRunnable();
+        debounce = Debouncer.create(name, function, 500, 1000, false, false);
+        assertTrue(function.callbacks.isEmpty());
+
+        CountDownLatch count = new CountDownLatch(1);
+        ActionListener listener = (e) -> count.countDown();
+        function.addListener(listener);
+        // 100 triggers interleaved by 100ms.
+        forLoop(20, (i) -> {
+            debounce.run();
+            sleep(100);
+        });
+        // There should be at least one function call due to forced run
+        assertTrue(function.callbacks.size() >= 1);
+        // Wait for the function call.
+        assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
+        // Make sure there are no more function calls.
+        Thread.sleep(3000);
+        // There should be two or more function calls.
+        assertTrue(function.callbacks.size() >= 2);
+        // All those function calls must be made from the Debounce thread.
+        forEach(function.callBackThreads, t -> assertEquals("Debounce-junit", t.getName()));
+    }
+
+    /**
+     * Tests debounce with immediate firing non blocking.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testDebouncerExecutionsNonBlocking() throws Exception {
+        TestRunnable function = new TestRunnable();
+        debounce = Debouncer.create(name, function, 1000, -1, true, true);
+        assertTrue(function.callbacks.isEmpty());
+        CountDownLatch count = new CountDownLatch(1);
+        ActionListener listener = (e) -> count.countDown();
+        function.addListener(listener);
+
+        debounce.run();
+        assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
+        // Wait for function call
+        assertEquals(1, function.callbacks.size());
+        System.out.println(function.callBackThreads.get(0));
+        // The new function call is from debounce thread pool.
+        assertTrue(function.callBackThreads.get(0).getName().contains("Debounce-junit-Threadpool"));
     }
 
     private class TestRunnable implements ThrowingRunnable {
