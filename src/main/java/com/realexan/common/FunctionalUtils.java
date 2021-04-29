@@ -58,37 +58,6 @@ public class FunctionalUtils {
     }
 
     /**
-     * Returns an object default sink.
-     * 
-     * @param <T> type of the consumed object.
-     * @return an object sink for the type passed.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> Consumer<T> sink() {
-        return (Consumer<T>) NO_OP_CONSUMER;
-    }
-
-    /**
-     * Returns an object source from the factory provided.
-     * 
-     * @param <T> type of the generated object.
-     * @return null.
-     */
-    public static <T> T source(ObjectFactory<T> factory) {
-        return factory.source();
-    }
-
-    /**
-     * Returns an object source from the factory provided.
-     * 
-     * @param <T> type of the generated object.
-     * @return null.
-     */
-    public static <T> T source() {
-        return null;
-    }
-
-    /**
      * Iterates through the iterable and feeds it to the consumer.
      * 
      * @param <T>      the type of elements in the iterable.
@@ -112,19 +81,6 @@ public class FunctionalUtils {
         for (T t : arr) {
             consumer.accept(t);
         }
-    }
-
-    /**
-     * Transforms the input to the output using the transformer.
-     * 
-     * @param <T>         the type of input.
-     * @param <R>         the type of output.
-     * @param input       the input.
-     * @param transformer the transformer.
-     * @return the transformed output.
-     */
-    public static <T, R> R map(T input, Function<T, R> transformer) {
-        return transformer.apply(input);
     }
 
     /**
