@@ -4,7 +4,7 @@ import static com.realexan.common.FunctionalUtils.NO_OP_THROWING_RUNNABLE;
 import static com.realexan.common.FunctionalUtils.forEach;
 import static com.realexan.common.FunctionalUtils.forLoop;
 import static com.realexan.common.ReflectionUtils.getField;
-import static com.realexan.junit.utils.JUConsumer.failTest;
+import static com.realexan.junit.utils.JUtils.failTest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -90,53 +90,74 @@ public class DebouncerTest {
     }
 
     @Test
-    public void testDebouncerInitialExecutionsWithCoolOff() throws Exception {
+    public void testDebouncerExecutionsImmediate() throws Exception {
         TestRunnable function = new TestRunnable();
         debounce = Debouncer.create(name, function, 1000);
         assertTrue(function.callbacks.isEmpty());
         debounce.run();
+        // Immediate call back
         assertEquals(1, function.callbacks.size());
+        // The first function call is through caller thread.
+        assertEquals(Thread.currentThread(), function.callBackThreads.get(0));
+
+        Thread.sleep(2000);
+        // No more function calls for just one trigger
+        assertEquals(0, function.callbacks.size());
+
+        CountDownLatch count = new CountDownLatch(2);
+        ActionListener listener = (e) -> count.countDown();
+        function.addListener(listener);
+        // 100 triggers
+        forLoop(100, debounce::run);
+
+        // Wait for all function calls
+        assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
+
+        assertEquals(3, function.callbacks.size());
+        // The function calls must be cool off time apart.
+        assertTrue(function.callbacks.get(2) - function.callbacks.get(1) >= 1000);
+        // The new function call is from debounce thread.
+        assertEquals("Debounce-junit", function.callBackThreads.get(2).getName());
+    }
+
+    @Test
+    public void testDebouncerExecutionsDelayed() throws Exception {
+        TestRunnable function = new TestRunnable();
+        debounce = Debouncer.create(name, function, 1000, -1, false, false);
+        assertTrue(function.callbacks.isEmpty());
+        debounce.run();
+        // No immediate function call.
+        assertEquals(0, function.callbacks.size());
 
         CountDownLatch count = new CountDownLatch(1);
         ActionListener listener = (e) -> count.countDown();
         function.addListener(listener);
-        forLoop(5, debounce::run);
-
+        // 100 triggers
+        forLoop(100, debounce::run);
+        // Still no function calls.
+        assertEquals(0, function.callbacks.size());
+        // Wait for the function call.
         assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
-
-        assertEquals(2, function.callbacks.size());
-        System.out.println(function.callbacks);
-        assertTrue(function.callbacks.get(1) - function.callbacks.get(0) >= 1000);
-    }
-
-    @Test
-    public void testDebouncerContinuousExecution() throws Exception {
-        TestRunnable function = new TestRunnable();
-        CountDownLatch count = new CountDownLatch(2);
-        debounce = Debouncer.create(name, function, 1000);
-        assertTrue(function.callbacks.isEmpty());
-
-        ActionListener listener = e -> count.countDown();
-        function.addListener(listener);
-        forLoop(5, debounce::run);
-
-        assertTrue(count.await(5000, TimeUnit.MILLISECONDS));
-
-        assertEquals(2, function.callbacks.size());
-        System.out.println(function.callbacks);
-        assertTrue(function.callbacks.get(1) - function.callbacks.get(0) >= 1000);
+        // Make sure there are no more function calls.
+        Thread.sleep(3000);
+        // For all the triggers, there should be only one function call.
+        assertEquals(1, function.callbacks.size());
+        // That function call must be made from the Debounce thread.
+        assertEquals("Debounce-junit", function.callBackThreads.get(0).getName());
     }
 
     private class TestRunnable implements ThrowingRunnable {
 
         List<ActionListener> listeners = new ArrayList<>();
 
-        List<Long> callbacks = new ArrayList<>();;
+        List<Long> callbacks = new ArrayList<>();
+
+        List<Thread> callBackThreads = new ArrayList<>();
 
         @Override
         public void execute() throws Throwable {
-            System.out.println(ThreadUtils.now());
             callbacks.add(ThreadUtils.now());
+            callBackThreads.add(Thread.currentThread());
             forEach(listeners, l -> l.actionPerformed(null));
         }
 

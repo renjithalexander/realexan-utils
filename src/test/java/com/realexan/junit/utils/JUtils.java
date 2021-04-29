@@ -1,5 +1,11 @@
 package com.realexan.junit.utils;
 
+import static com.realexan.common.FunctionalUtils.r2C;
+
+import java.util.function.Consumer;
+
+import org.junit.Assert;
+
 /**
  * Junit utilities.
  * 
@@ -22,5 +28,12 @@ package com.realexan.junit.utils;
  *          </table>
  */
 public class JUtils {
+
+    public static Consumer<?> assertFail = r2C(Assert::fail);
+
+    @SuppressWarnings("unchecked")
+    public static <T> Consumer<T> failTest() {
+        return (Consumer<T>) assertFail;
+    }
 
 }
