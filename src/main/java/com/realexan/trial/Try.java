@@ -137,7 +137,7 @@ public class Try<T, U> {
         try {
             return new TryResult<>(input, function.apply(input));
         } catch (Throwable e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return new TryResult<>(input, e);
         }
     }

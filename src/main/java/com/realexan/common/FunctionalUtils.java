@@ -3,10 +3,7 @@
  */
 package com.realexan.common;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.realexan.util.function.ThrowingRunnable;
 
@@ -136,23 +133,4 @@ public class FunctionalUtils {
         };
     }
 
-    public static void main(String... args) {
-        List<String> strs = new ArrayList<>();
-        for (int i = 1; i <= 100; ++i) {
-            strs.add("" + i);
-        }
-        forEach(strs, System.out::println);
-
-        String[] arr = new String[100];
-        for (int i = 1; i <= 100; ++i) {
-            arr[i - 1] = "" + i;
-        }
-        forEach(arr, System.out::println);
-
-    }
-
-    public static interface ObjectFactory<T> {
-
-        T source();
-    }
 }
