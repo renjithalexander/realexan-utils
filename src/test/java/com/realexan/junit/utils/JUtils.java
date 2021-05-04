@@ -1,6 +1,8 @@
 package com.realexan.junit.utils;
 
 import static com.realexan.common.FunctionalUtils.r2C;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.function.Consumer;
 
@@ -34,6 +36,21 @@ public class JUtils {
     @SuppressWarnings("unchecked")
     public static <T> Consumer<T> failTest() {
         return (Consumer<T>) assertFail;
+    }
+
+    /**
+     * Expect the runtime failure while executing the runnable.
+     * 
+     * @param r              the runnable to be executed.
+     * @param exceptionClass the Exception to be expected.
+     */
+    public static void expectRuntimeFailure(Runnable r, Class<? extends Throwable> exceptionClass) {
+        try {
+            r.run();
+            fail();
+        } catch (Throwable thrown) {
+            assertEquals(exceptionClass, thrown.getClass());
+        }
     }
 
 }

@@ -1,11 +1,11 @@
 package com.realexan.event;
 
 import static com.realexan.common.ReflectionUtils.getField;
+import static com.realexan.junit.utils.JUtils.expectRuntimeFailure;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -68,15 +68,6 @@ public class EventManagerTest {
             es.shutdown();
         }
 
-    }
-
-    private static void expectRuntimeFailure(Runnable r, Class<? extends Throwable> exceptionClass) {
-        try {
-            r.run();
-            fail();
-        } catch (Throwable thrown) {
-            assertEquals(exceptionClass, thrown.getClass());
-        }
     }
 
     /**
