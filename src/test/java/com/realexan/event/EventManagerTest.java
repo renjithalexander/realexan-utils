@@ -13,9 +13,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.realexan.event.EventManager.DispatcherType;
+
+import mockit.Expectations;
+import mockit.Mocked;
 
 /**
  * The test class for EventManager.
@@ -39,6 +45,21 @@ import com.realexan.event.EventManager.DispatcherType;
  *          </table>
  */
 public class EventManagerTest {
+    @Mocked
+    LoggerFactory loggerFactory;
+    @Mocked
+    Logger logger;
+
+    @Before
+    public void setup() {
+        new Expectations() {
+            {
+                LoggerFactory.getLogger((Class<?>) any);
+                result = logger;
+                minTimes = 0;
+            }
+        };
+    }
 
     private void cleanup(EventManager<?> eventManager) throws Exception {
         EventDispatcher<?> disp = getField(eventManager, "dispatcher");
