@@ -70,3 +70,38 @@ A framework that enables debouncing functionality.
 ### Motivation
 
 Certain triggers were supposed to clear a certain cache, and the cache clearing required spawning of a bash process from the java code. However, at a certain point of time a new trigger was added, which was likely to fire in burst mode- up to 24000 in a batch, within a duration of 5-10 seconds. Had to restrict the spawning of so many cache clearing process in such a short duration.
+
+### Implementation
+
+The Debounce can be created by passing a name, a function that needs to be executed on a trigger(which can throw a Throwable), a cool off period(the minimum duration between two runs of the function), a forced run interval(the maximum duration between two consecutive runs if the triggers don't stop), and a flag with which the caller can configure the trigger to be immediate or delayed, and another flag which configures the debounce to run the function in its own single threaded executor.
+
+The client code can create an instance of the Debounce, passing the function to be executed and the other configurations, and attach it(Debounce.run()) to the trigger for the function call. The debounce will take care of controlling the function call frequency.
+
+When the trigger fires for the first time, the Debounce does the function call(if immediate flag is set), and starts the cool-off period. All triggers during this cool-off period will just extend the cool-off period and no function call will be made. When the cool-off period ends, there will be another function call made by debounce only if there has been triggers during the cool-off period.
+
+In case the triggers don't cease to stop, and the cool-off period gets extended indefinitely, the Debounce will initiate a forced function call every "forced run interval", if it is configured. 
+
+Debounce is written to be resource efficient too. Debounce uses a Timer for the functionality. However, this timer is lazily initialized and has a default idle time of 60 seconds, and thus if no trigger fires for over 60 seconds, the Timer is killed. The timer gets re-created when the next trigger fires. Thus there will not be any overhead of a dormant thread for non-frequently used debounces. Similarly, it doesn't add new schedules to the timer in case of burst mode triggers. At any point of time, the Timer will have at most two timer tasks, one for handling function runs and cool off periods, and another to monitor Timer going idle.
+
+### Example
+
+```java
+
+    private Debounce proxyFunction = Debouncer.create("test-debounce", this::actualFunction, 1000, 10000, true, false);
+
+    private void actualFunction() {
+        doTheCostlyOperation();
+    }
+    
+    .....
+    /**
+     * The caller can safely call this function as frequently as required.
+     * The Debounce will take care of actual function calls made.
+     */ 
+    public void trigger() {
+        proxyFunction.run()
+    }
+    
+    
+    
+```
