@@ -45,8 +45,10 @@ import mockit.Mocked;
  *          </table>
  */
 public class EventManagerTest {
+
     @Mocked
     LoggerFactory loggerFactory;
+
     @Mocked
     Logger logger;
 
