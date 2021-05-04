@@ -37,11 +37,34 @@ public class Try<T, U> {
 
     private final Function<T, TryResult<T, U>> function;
 
+    /**
+     * Returns a Try function composed of the ThrowingFunction. Try.tryIt(input)
+     * will execute the function and returns a TryResult.
+     * 
+     * @param function the ThrowingFunction.
+     */
     public Try(ThrowingFunction<T, U> function) {
         Objects.requireNonNull(function);
-        this.function = getFunction(function);
+        this.function = input -> {
+            try {
+                return new TryResult<>(input, function.apply(input));
+            } catch (Throwable e) {
+                return new TryResult<>(input, e);
+            }
+        };
     }
 
+    /**
+     * Returns a Try function which composes a Try function which runs once this Try
+     * succeeds and another which runs once this fails.
+     * 
+     * @param <Z>       The final output type after the composed Try functions are
+     *                  run.
+     * @param another   the Try function that would be run on success of this Try.
+     * @param onFailure the Try function that would be execute once this Try
+     *                  function fails.
+     * @return a Try
+     */
     public <Z> Try<T, Z> then(Try<U, Z> another, Try<U, Z> onFailure) {
         Objects.requireNonNull(another);
         Objects.requireNonNull(onFailure);
@@ -59,6 +82,15 @@ public class Try<T, U> {
         });
     }
 
+    /**
+     * Returns a Try function which composes a Try function which runs once this Try
+     * succeeds.
+     * 
+     * @param <Z>     The final output type after the composed Try functions are
+     *                run.
+     * @param another the Try function that would be run on success of this Try.
+     * @return a Try
+     */
     public <Z> Try<T, Z> then(Try<U, Z> another) {
         Objects.requireNonNull(another);
         return new Try<>((ThrowingFunction<T, Z>) (t) -> {
@@ -77,6 +109,14 @@ public class Try<T, U> {
         });
     }
 
+    /**
+     * Composes a Try with the ThrowingFunction to be executed on the success of
+     * this try function.
+     * 
+     * @param <Z>      the final return type.
+     * @param function the ThrowingFunction to be executed if this Try succeeds.
+     * @return a Try.
+     */
     public <Z> Try<T, Z> then(ThrowingFunction<U, Z> function) {
         return this.then(new Try<>(function));
     }
@@ -137,7 +177,7 @@ public class Try<T, U> {
         try {
             return new TryResult<>(input, function.apply(input));
         } catch (Throwable e) {
-            //e.printStackTrace();
+            // e.printStackTrace();
             return new TryResult<>(input, e);
         }
     }
@@ -178,18 +218,6 @@ public class Try<T, U> {
     public interface TestFunction<T> extends ThrowingFunction<T, Void> {
 
         Void apply(T input) throws Throwable;
-    }
-
-    private static <T, U> Function<T, TryResult<T, U>> getFunction(ThrowingFunction<T, U> function) {
-        Objects.requireNonNull(function);
-        return (input) -> {
-            try {
-                return new TryResult<>(input, function.apply(input));
-            } catch (Throwable e) {
-                return new TryResult<>(input, e);
-            }
-        };
-
     }
 
     public static void main(String... args) {

@@ -41,9 +41,27 @@ public class ReflectionUtils {
     public static <T> T getField(Object obj, String fieldName)
             throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         Class<?> clazz = obj.getClass();
-        Field f = clazz.getDeclaredField(fieldName);
+        Field f = null;
+        NoSuchFieldException nsfe = null;
+        // search in the entire hierarchy.
+        do {
+            try {
+                f = clazz.getDeclaredField(fieldName);
+                break;
+            } catch (NoSuchFieldException e) {
+                if (nsfe == null) {
+                    nsfe = e;
+                }
+                clazz = clazz.getSuperclass();
+            }
+        } while (clazz != null);
+        // If the field not found in the hierarchy.
+        if (f == null && nsfe != null) {
+            throw nsfe;
+        }
         f.setAccessible(true);
         return (T) f.get(obj);
+
     }
 
     /**
