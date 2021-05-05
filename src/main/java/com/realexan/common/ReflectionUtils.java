@@ -41,24 +41,7 @@ public class ReflectionUtils {
     public static <T> T getField(Object obj, String fieldName)
             throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         Class<?> clazz = obj.getClass();
-        Field f = null;
-        NoSuchFieldException nsfe = null;
-        // search in the entire hierarchy.
-        do {
-            try {
-                f = clazz.getDeclaredField(fieldName);
-                break;
-            } catch (NoSuchFieldException e) {
-                if (nsfe == null) {
-                    nsfe = e;
-                }
-                clazz = clazz.getSuperclass();
-            }
-        } while (clazz != null);
-        // If the field not found in the hierarchy.
-        if (f == null && nsfe != null) {
-            throw nsfe;
-        }
+        Field f = findField(clazz, fieldName);
         f.setAccessible(true);
         return (T) f.get(obj);
 
@@ -78,9 +61,44 @@ public class ReflectionUtils {
     public static void setField(Object obj, String fieldName, Object fieldValue)
             throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         Class<?> clazz = obj.getClass();
-        Field f = clazz.getDeclaredField(fieldName);
+        Field f = findField(clazz, fieldName);
         f.setAccessible(true);
         f.set(obj, fieldValue);
+    }
+
+    /**
+     * Finds the field from the Class supplied, or any of its concrete ancestor
+     * classes.
+     * 
+     * @param clazz     the class in which the field has to be searched for.
+     * @param fieldName the name of the field.
+     * @return a Field object corresponding to the fieldName.
+     * @throws NoSuchFieldException if no field with the field name found in the
+     *                              hierarchy.
+     */
+    public static Field findField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        Field field = null;
+        NoSuchFieldException nsfe = null;
+        // search in the entire hierarchy.
+        do {
+            try {
+                field = clazz.getDeclaredField(fieldName);
+                break;
+            } catch (NoSuchFieldException e) {
+                // Keep the first exception to be thrown later, if the field is not found in the
+                // hierarchy.
+                if (nsfe == null) {
+                    nsfe = e;
+                }
+                // TODO extend it for interfaces too.
+                clazz = clazz.getSuperclass();
+            }
+        } while (clazz != null);
+        // If the field not found in the hierarchy.
+        if (field == null && nsfe != null) {
+            throw nsfe;
+        }
+        return field;
     }
 
 }
